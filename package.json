@@ -1,0 +1,26 @@
+{
+  "name": "podcast-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "node --watch server.js",
+    "devStart": "nodemon script.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dykflint/podcast-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dykflint/podcast-app/issues"
+  },
+  "homepage": "https://github.com/dykflint/podcast-app#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "rss-parser": "^3.13.0"
+  }
+}
