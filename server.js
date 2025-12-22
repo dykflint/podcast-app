@@ -14,6 +14,7 @@ import { getPodcast } from './controllers/podcastController.js';
 const app = express();
 const parser = new Parser();
 
+app.use(express.static('.'));
 /**
  * GET /api/podcast
  *

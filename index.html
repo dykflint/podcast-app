@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Podcast Player</title>
+
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      button {
+        padding: 0.5rem 1rem;
+        margin-bottom: 1rem;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      li {
+        padding: 0.75rem;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+      }
+
+      li:hover {
+        background: #f5f5f5;
+      }
+
+      .title {
+        font-weight: bold;
+      }
+
+      .description {
+        font-size: 0.9rem;
+        color: #555;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Podcast Player</h1>
+
+    <!-- RSS input -->
+    <input id="rssInput" type="text" placeholder="Enter podcast RSS feed URL" />
+    <button id="loadBtn">Load Podcast</button>
+
+    <!-- Audio player -->
+    <audio id="audioPlayer" controls style="width: 100%; margin: 1rem 0"></audio>
+
+    <!-- Episode list -->
+    <ul id="episodeList"></ul>
+
+    <script>
+      const loadBtn = document.getElementById('loadBtn');
+      const rssInput = document.getElementById('rssInput');
+      const episodeList = document.getElementById('episodeList');
+      const audioPlayer = document.getElementById('audioPlayer');
+
+      /**
+       * Fetch podcast data from the backend
+       */
+      async function loadPodcast() {
+        const rssUrl = rssInput.value.trim();
+
+        if (!rssUrl) {
+          alert('Please enter an RSS feed URL');
+          return;
+        }
+
+        episodeList.innerHTML = 'Loading...';
+
+        try {
+          const response = await fetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch podcast');
+          }
+
+          const podcast = await response.json();
+          renderEpisodes(podcast.episodes);
+        } catch (error) {
+          console.error(error);
+          episodeList.innerHTML = 'Failed to load podcast';
+        }
+      }
+
+      /**
+       * Render episode list to the DOM
+       */
+      function renderEpisodes(episodes) {
+        episodeList.innerHTML = '';
+
+        episodes.forEach(episode => {
+          const li = document.createElement('li');
+
+          li.innerHTML = `
+            <div class="title">${episode.title}</div>
+            <div class="description">${episode.description}</div>
+          `;
+          li.addEventListener('click', () => {
+            if (!episode.audioUrl) {
+              alert('No audio available for this episode');
+              return;
+            }
+
+            audioPlayer.src = episode.audioUrl;
+            audioPlayer.play();
+          });
+
+          episodeList.appendChild(li);
+        });
+      }
+
+      loadBtn.addEventListener('click', loadPodcast);
+    </script>
+  </body>
+</html>
