@@ -11,9 +11,11 @@
 import express from 'express';
 import Parser from 'rss-parser';
 import { getPodcast } from './controllers/podcastController.js';
+import { prisma } from './db/prisma.js';
 const app = express();
 const parser = new Parser();
 
+console.log('Prisma ready');
 app.use(express.static('.'));
 /**
  * GET /api/podcast
