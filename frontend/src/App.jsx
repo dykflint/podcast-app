@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function App() {
   // --- State ---
@@ -10,6 +10,17 @@ export default function App() {
   // Index of the currently playing episode
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(null);
 
+  // Notes for the currently selected / playing episode
+  const [notes, setNotes] = useState('');
+
+  /**
+   *
+   * Helper to build a unique localStorage key
+   * for a specific podcast episode
+   */
+  function getNotesStorageKey(rssUrl, episodeIndex) {
+    return `notes::${rssUrl}::${episodeIndex}`;
+  }
   async function loadPodcast() {
     if (!rssUrl.trim()) {
       alert('Please enter an RSS feed URL');
@@ -20,6 +31,7 @@ export default function App() {
     setError(null);
     setEpisodes([]);
     setCurrentEpisodeIndex(null);
+    setNotes('');
 
     try {
       const response = await fetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
@@ -38,8 +50,38 @@ export default function App() {
     }
   }
 
+  /**
+   * Derive the currently plaiyng audio URL
+   */
   const currentAudioUrl =
     currentEpisodeIndex !== null ? episodes[currentEpisodeIndex]?.audioUrl : null;
+
+  /**
+   * Load notes from localStorage
+   * whenever the selected episode changes.
+   */
+  useEffect(() => {
+    if (currentEpisodeIndex === null) {
+      setNotes('');
+      return;
+    }
+
+    const key = getNotesStorageKey(rssUrl, currentEpisodeIndex);
+    const savedNotes = localStorage.getItem(key);
+
+    setNotes(savedNotes || '');
+  }, [currentEpisodeIndex, rssUrl]);
+
+  /**
+   * Persist notes to localStorage
+   * whenever the user edits them.
+   */
+  useEffect(() => {
+    if (currentEpisodeIndex === null) return;
+
+    const key = getNotesStorageKey(rssUrl, currentEpisodeIndex);
+    localStorage.setItem(key, notes);
+  }, [notes, currentEpisodeIndex, rssUrl]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -105,6 +147,19 @@ export default function App() {
             );
           })}
         </ul>
+
+        {/* Episode Notes */}
+        {currentEpisodeIndex !== null && (
+          <div className="rounded bg-white p-4 shadow">
+            <h2 className="mb-2 text-lg font-semibold">Episode Notes</h2>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Write your notes for this episode..."
+              className="h-40 w-full resize-none rounded border border-gray-300 p-2"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
