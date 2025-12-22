@@ -15,7 +15,6 @@ const pool = new Pool({
 });
 
 const adapter = new PrismaPg(pool);
-
 // Prevent multiple instances in dev (hot reload safety)
 const globalForPrisma = globalThis;
 
