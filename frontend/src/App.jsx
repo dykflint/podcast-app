@@ -1,15 +1,3 @@
-/**
- * App.jsx
- *
- * Main react component for the podcast player.
- *
- * Responsibilities:
- * - Hold application state
- * - Fetch podcast data from backend
- * - Render episode list
- * - Controler audio playback
- */
-
 import { useState } from 'react';
 
 export default function App() {
@@ -18,11 +6,10 @@ export default function App() {
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentAudioUrl, setCurrentAudioUrl] = useState(null);
 
-  /**
-   * Fetch podcast data from the backend
-   */
+  // Index of the currently playing episode
+  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(null);
+
   async function loadPodcast() {
     if (!rssUrl.trim()) {
       alert('Please enter an RSS feed URL');
@@ -32,6 +19,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     setEpisodes([]);
+    setCurrentEpisodeIndex(null);
 
     try {
       const response = await fetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
@@ -42,13 +30,16 @@ export default function App() {
 
       const podcast = await response.json();
       setEpisodes(podcast.episodes);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError('Failed to load podcast');
     } finally {
       setLoading(false);
     }
   }
+
+  const currentAudioUrl =
+    currentEpisodeIndex !== null ? episodes[currentEpisodeIndex]?.audioUrl : null;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -70,7 +61,7 @@ export default function App() {
             disabled={loading}
             className="rounded bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
           >
-            {loading ? 'Loading...' : 'Load'}
+            {loading ? 'Loading…' : 'Load'}
           </button>
         </div>
 
@@ -84,23 +75,35 @@ export default function App() {
 
         {/* Episode List */}
         <ul className="divide-y divide-gray-200 rounded bg-white shadow">
-          {episodes.map((episode, index) => (
-            <li
-              key={index}
-              className="cursor-pointer p-4 hover:bg-gray-50"
-              onClick={() => {
-                console.log(episode.audioUrl);
-                if (!episode.audioUrl) {
-                  alert('No audio available for this episode');
-                  return;
-                }
-                setCurrentAudioUrl(episode.audioUrl);
-              }}
-            >
-              <div className="font-semibold">{episode.title}</div>
-              <div className="text-sm text-gray-600">{episode.description}</div>
-            </li>
-          ))}
+          {episodes.map((episode, index) => {
+            const isPlaying = index === currentEpisodeIndex;
+
+            return (
+              <li
+                key={index}
+                onClick={() => {
+                  if (!episode.audioUrl) {
+                    alert('No audio available for this episode');
+                    return;
+                  }
+                  setCurrentEpisodeIndex(index);
+                }}
+                className={`cursor-pointer p-4 transition
+                  ${isPlaying ? 'bg-blue-50 pointer-events-none' : 'hover:bg-gray-50'}
+                `}
+              >
+                <div className={`font-semibold ${isPlaying ? 'text-blue-700' : ''}`}>
+                  {episode.title}
+                </div>
+
+                <div className="text-sm text-gray-600">{episode.description}</div>
+
+                {isPlaying && (
+                  <div className="mt-2 text-xs font-semibold text-blue-600">▶ Now Playing</div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>
