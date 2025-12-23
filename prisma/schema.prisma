@@ -51,7 +51,8 @@ model Note {
   episodeId Int?
   episode   Episode? @relation(fields: [episodeId], references: [id])
 
-  content String
+  timestampSeconds Int?
+  content          String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
