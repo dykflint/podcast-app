@@ -18,6 +18,10 @@ export default function App() {
   const [episodeNotes, setEpisodeNotes] = useState([]);
   const [newEpisodeNote, setNewEpisodeNote] = useState('');
 
+  // --- Editing notes ---
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [editingContent, setEditingContent] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -100,6 +104,29 @@ export default function App() {
     setNewEpisodeNote('');
   }
 
+  async function saveEditedNote(noteId) {
+    const res = await fetch(`/api/notes/${noteId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: editingContent }),
+    });
+
+    const updated = await res.json();
+
+    // Update both lists
+    setPodcastNotes(notes => notes.map(n => (n.id === updated.id ? updated : n)));
+    setEpisodeNotes(notes => notes.map(n => (n.id === updated.id ? updated : n)));
+
+    setEditingNoteId(null);
+    setEditingContent('');
+  }
+
+  async function deleteNoteById(noteId) {
+    await fetch(`/api/notes/${noteId}`, { method: 'DELETE' });
+
+    setPodcastNotes(notes => notes.filter(n => n.id !== noteId));
+    setEpisodeNotes(notes => notes.filter(n => n.id !== noteId));
+  }
   /**
    * Derive the currently plaiyng audio URL
    */
@@ -138,15 +165,53 @@ export default function App() {
             <ul className="mb-3 space-y2 text-sm">
               {podcastNotes.map(note => (
                 <li key={note.id} className="rounded bg-gray-100 p-2">
-                  {note.content}
+                  {editingNoteId === note.id ? (
+                    <>
+                      <textarea
+                        value={editingContent}
+                        onChange={e => setEditingContent(e.target.value)}
+                        className="mb-2 w-full rounded border p-1"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => saveEditedNote(note.id)}
+                          className="text-sm text-blue-600"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => saveEditedNote(null)}
+                          className="text-sm text-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>{note.content}</div>
+                      <div className="mt-1 flex gap-3 text-xs text-gray-600">
+                        <button
+                          onClick={() => {
+                            setEditingNoteId(note.id);
+                            setEditingContent(note.content);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button onClick={() => deleteNoteById(note.id)} className="text-red-600">
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
-
             <textarea
               value={newPodcastNote}
               onChange={e => setNewPodcastNote(e.target.value)}
-              placeholder="Add a podcast-white note..."
+              placeholder="Add a podcast-wide note..."
               className="mb-2 w-full rounded border p-2"
             />
             <button onClick={addPodcastNote} className="rounded bg-blue-600 px-3 py-1 text-white">
@@ -178,17 +243,59 @@ export default function App() {
                 <ul className="mb-3 space-y-2 text-sm">
                   {episodeNotes.map(note => (
                     <li key={note.id} className="rounded bg-gray-100 p-2">
-                      {note.content}
+                      {editingNoteId === note.id ? (
+                        <>
+                          <textarea
+                            value={editingContent}
+                            onChange={e => setEditingContent(e.target.value)}
+                            className="mb-2 w-full rounded border p-1"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => saveEditedNote(note.id)}
+                              className="text-sm text-blue-600"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => saveEditedNote(null)}
+                              className="text-sm text-gray-600"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>{note.content}</div>
+                          <div className="mt-1 flex gap-3 text-xs text-gray-600">
+                            <button
+                              onClick={() => {
+                                setEditingNoteId(note.id);
+                                setEditingContent(note.content);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => deleteNoteById(note.id)}
+                              className="text-red-600"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>
-
                 <textarea
                   value={newEpisodeNote}
                   onChange={e => setNewEpisodeNote(e.target.value)}
                   placeholder="Add an episode note..."
                   className="mb-2 w-full rounded border p-2"
                 />
+
                 <button
                   onClick={addEpisodeNote}
                   className="rounded bg-blue-600 px-3 py-1 text-white"
