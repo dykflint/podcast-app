@@ -10,36 +10,22 @@
 import 'dotenv/config';
 import express from 'express';
 import Parser from 'rss-parser';
-import { getPodcast } from './controllers/podcastController.js';
+/**
+ * Import routes
+ */
+import noteRoutes from './routes/noteRoutes.js';
+import podcastRoutes from './routes/podcastRoutes.js';
+
 const app = express();
 const parser = new Parser();
 
 app.use(express.static('.'));
+app.use(express.json());
 /**
- * GET /api/podcast
- *
- * Query parameters:
- * - rssUrl: string (required)
- *
- * Example request:
- * GET /api/podcast/?rssUrl=https://feeds.simplecast.com/54nAGcIl
- *
- * Response:
- * {
- *  title: string,
- *  description: string,
- *  episodes: [
- *    {
- *      title: string,
- *      description: string,
- *      audioUrl: string,
- *      publishedAt: string
- *    }
- *  ]
- * }
+ * Routes
  */
-
-app.get('/api/podcast', getPodcast);
+app.use('/api', podcastRoutes);
+app.use('/api', noteRoutes);
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Podcast backend running on http://localhost:${PORT}`);
