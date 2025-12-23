@@ -47,6 +47,7 @@ export async function createNoteHandler(req, res) {
       content,
       podcastId: podcastId ?? null,
       episodeId: episodeId ?? null,
+      timestampSeconds,
     });
 
     res.status(201).json(note);

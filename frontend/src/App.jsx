@@ -22,6 +22,7 @@ export default function App() {
   // --- Editing notes ---
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
+  const [editingTimestamp, setEditingTimestamp] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -91,7 +92,25 @@ export default function App() {
   async function addEpisodeNote() {
     if (!newEpisodeNote.trim() || !selectedEpisodeId) return;
 
-    const timestampSeconds = audioRef.current ? Math.floor(audioRef.current.currentTime) : null;
+    const res = await fetch('/api/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        episodeId: selectedEpisodeId,
+        content: newEpisodeNote,
+        timestampSeconds: null,
+      }),
+    });
+
+    const note = await res.json();
+    setEpisodeNotes([...episodeNotes, note]);
+    setNewEpisodeNote('');
+  }
+  async function addEpisodeNoteAtCurrentTime() {
+    if (!newEpisodeNote.trim() || !selectedEpisodeId) return;
+    if (!audioRef.current) return;
+
+    const timestampSeconds = Math.floor(audioRef.current.currentTime);
 
     const res = await fetch('/api/notes', {
       method: 'POST',
@@ -121,7 +140,7 @@ export default function App() {
     const res = await fetch(`/api/notes/${noteId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: editingContent }),
+      body: JSON.stringify({ content: editingContent, timestampSeconds: editingTimestamp }),
     });
 
     const updated = await res.json();
@@ -193,7 +212,7 @@ export default function App() {
                           Save
                         </button>
                         <button
-                          onClick={() => saveEditedNote(null)}
+                          onClick={() => saveEditedNoteId(null)}
                           className="text-sm text-gray-600"
                         >
                           Cancel
@@ -258,12 +277,22 @@ export default function App() {
                     <li key={note.id} className="rounded bg-gray-100 p-2">
                       {editingNoteId === note.id ? (
                         <>
+                          {note.timestampSeconds !== null && (
+                            <input
+                              type="number"
+                              min="0"
+                              value={editingTimestamp}
+                              onChange={e => setEditingTimestamp(Number(e.target.value))}
+                              className="mb-1 w-24 rounded border p-1 text-xs"
+                              placeholder="Seconds"
+                            />
+                          )}
                           <textarea
                             value={editingContent}
                             onChange={e => setEditingContent(e.target.value)}
                             className="mb-2 w-full rounded border p-1"
                           />
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 text-sm">
                             <button
                               onClick={() => saveEditedNote(note.id)}
                               className="text-sm text-blue-600"
@@ -271,7 +300,7 @@ export default function App() {
                               Save
                             </button>
                             <button
-                              onClick={() => saveEditedNote(null)}
+                              onClick={() => saveEditedNoteId(null)}
                               className="text-sm text-gray-600"
                             >
                               Cancel
@@ -284,9 +313,21 @@ export default function App() {
                             {note.timestampSeconds !== null && (
                               <button
                                 onClick={() => {
-                                  if (audioRef.current) {
-                                    audioRef.current.currentTime = note.timestampSeconds;
-                                    audioRef.current.play();
+                                  // Switch episode if needed
+                                  const episodeIndex = episodes.findIndex(
+                                    ep => ep.id === note.episodeId,
+                                  );
+
+                                  if (episodeIndex !== -1) {
+                                    setCurrentEpisodeIndex(episodeIndex);
+
+                                    // Wait for audio source to update
+                                    setTimeout(() => {
+                                      if (audioRef.current) {
+                                        audioRef.current.currentTime = note.timestampSeconds;
+                                        audioRef.current.play();
+                                      }
+                                    }, 200);
                                   }
                                 }}
                                 className="text-blue-600 text-xs font-mono"
@@ -301,6 +342,7 @@ export default function App() {
                               onClick={() => {
                                 setEditingNoteId(note.id);
                                 setEditingContent(note.content);
+                                setEditingTimestamp(note.timestampSeconds ?? 0);
                               }}
                             >
                               Edit
@@ -317,19 +359,30 @@ export default function App() {
                     </li>
                   ))}
                 </ul>
-                <textarea
-                  value={newEpisodeNote}
-                  onChange={e => setNewEpisodeNote(e.target.value)}
-                  placeholder="Add an episode note..."
-                  className="mb-2 w-full rounded border p-2"
-                />
+                <div className="mb-2 flex gap-2">
+                  <textarea
+                    value={newEpisodeNote}
+                    onChange={e => setNewEpisodeNote(e.target.value)}
+                    placeholder="Add an episode note..."
+                    className="flex-1 rounded border p-2"
+                  />
 
-                <button
-                  onClick={addEpisodeNote}
-                  className="rounded bg-blue-600 px-3 py-1 text-white"
-                >
-                  Save Note
-                </button>
+                  <button
+                    onClick={addEpisodeNote}
+                    className="rounded bg-blue-600 px-3 py-2 text-white"
+                  >
+                    Add{' '}
+                  </button>
+
+                  <button
+                    onClick={addEpisodeNoteAtCurrentTime}
+                    className="rounded bg-green-600 px-3 py-2 text-white"
+                    title="Add note at current playback time"
+                    disabled={!audioRef.current}
+                  >
+                    Add Timed Note
+                  </button>
+                </div>
               </>
             )}
           </section>
@@ -353,7 +406,10 @@ export default function App() {
                     alert('No audio available for this episode');
                     return;
                   }
+                  // Start playback
                   setCurrentEpisodeIndex(index);
+                  // Sync episode notes
+                  setSelectedEpisodeId(episode.id);
                 }}
                 className={`cursor-pointer p-3 transition
                   ${isPlaying ? 'bg-blue-50 pointer-events-none' : 'hover:bg-gray-50'}
