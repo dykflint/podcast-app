@@ -5,11 +5,17 @@
  */
 
 import express from 'express';
-import { getNotesHandler, createNoteHandler } from '../controllers/noteController.js';
+import {
+  getNotesHandler,
+  createNoteHandler,
+  updateNoteHandler,
+  deleteNoteHandler,
+} from '../controllers/noteController.js';
 
 const router = express.Router();
 
 router.get('/notes', getNotesHandler);
 router.post('/notes', createNoteHandler);
-
+router.patch('/notes/:id', updateNoteHandler);
+router.delete('/notes/:id', deleteNoteHandler);
 export default router;

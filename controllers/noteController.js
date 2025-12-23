@@ -4,7 +4,7 @@
  * HTTP layer for notes.
  */
 
-import { getNotes, createNote } from '../services/noteService.js';
+import { getNotes, createNote, updateNote, deleteNote } from '../services/noteService.js';
 
 /**
  * GET /api/notes
@@ -50,6 +50,39 @@ export async function createNoteHandler(req, res) {
     });
 
     res.status(201).json(note);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+/**
+ * PATCH /api/notes/:id
+ */
+export async function updateNoteHandler(req, res) {
+  const noteId = Number(req.params.id);
+  const { content } = req.body;
+
+  try {
+    const updated = await updateNote({
+      noteId,
+      content,
+    });
+
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+/**
+ * DELETE /api/notes/:id
+ */
+export async function deleteNoteHandler(req, res) {
+  const noteId = Number(req.params.id);
+
+  try {
+    await deleteNote(noteId);
+    res.status(204).send();
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

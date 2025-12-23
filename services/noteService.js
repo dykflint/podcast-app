@@ -51,3 +51,34 @@ export async function createNote({ podcastId, episodeId, content }) {
     },
   });
 }
+
+/**
+ * Update a note's content.
+ */
+export async function updateNote({ noteId, content }) {
+  if (!noteId) {
+    throw new Error('noteId is required');
+  }
+
+  if (!content || !content.trim()) {
+    throw new Error('Note content is required');
+  }
+
+  return prisma.note.update({
+    where: { id: noteId },
+    data: { content },
+  });
+}
+
+/**
+ * Delete a note.
+ */
+export async function deleteNote(noteId) {
+  if (!noteId) {
+    throw new Error('noteId is required');
+  }
+
+  return prisma.note.delete({
+    where: { id: noteId },
+  });
+}
