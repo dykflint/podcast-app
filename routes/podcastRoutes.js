@@ -4,7 +4,7 @@
  * Routes for podcast-fetching.
  */
 import express from 'express';
-import { getPodcast } from '../controllers/podcastController.js';
+import { getPodcast, getPodcasts } from '../controllers/podcastController.js';
 
 const router = express.Router();
 
@@ -33,4 +33,10 @@ const router = express.Router();
  */
 router.get('/podcast', getPodcast);
 
+/**
+ * GET /api/podcasts
+ *
+ * Fetch all podcasts
+ */
+router.get('/podcasts', getPodcasts);
 export default router;

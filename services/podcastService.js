@@ -112,6 +112,39 @@ export async function getPodcastFromRss(rssUrl) {
 }
 
 /**
+ * Fetch all podcasts for the library view.
+ *
+ * Returns lightweight data:
+ * - metadata
+ * - episode count
+ * - note count
+ */
+export async function getAllPodcasts() {
+  const podcasts = await prisma.podcast.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+    include: {
+      _count: {
+        select: {
+          episodes: true,
+          notes: true,
+        },
+      },
+    },
+  });
+
+  // Normalize for frontend consumption
+  return podcasts.map(podcast => ({
+    id: podcast.id,
+    title: podcast.title,
+    description: podcast.description,
+    rssUrl: podcast.rssUrl,
+    episodeCount: podcast._count.episodes,
+    noteCount: podcast._count.notes,
+  }));
+}
+/**
  * TESTING ONLY
  */
 export function __clearCache() {
