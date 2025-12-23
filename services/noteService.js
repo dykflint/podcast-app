@@ -35,7 +35,7 @@ export async function getNotes({ podcastId, episodeId }) {
  *
  * Exactly one of podcastId or episodeId must be provided.
  */
-export async function createNote({ podcastId, episodeId, content }) {
+export async function createNote({ podcastId, episodeId, content, timestampSeconds }) {
   if (!content || !content.trim()) {
     throw new Error('Note content is required.');
   }
@@ -48,6 +48,7 @@ export async function createNote({ podcastId, episodeId, content }) {
       podcastId: podcastId ?? null,
       episodeId: episodeId ?? null,
       content,
+      timestampSeconds: timestampSeconds ?? null,
     },
   });
 }

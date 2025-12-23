@@ -40,7 +40,7 @@ export async function getNotesHandler(req, res) {
  */
 export async function createNoteHandler(req, res) {
   console.log(req.body);
-  const { content, podcastId, episodeId } = req.body;
+  const { content, podcastId, episodeId, timestampSeconds } = req.body;
 
   try {
     const note = await createNote({

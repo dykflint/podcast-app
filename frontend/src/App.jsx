@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function App() {
   // --- Podcast and episodes ---
@@ -8,6 +8,7 @@ export default function App() {
 
   // --- Playback ---
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(null);
+  const audioRef = useRef(null);
 
   // --- Podcast notes ---
   const [podcastNotes, setPodcastNotes] = useState([]);
@@ -90,12 +91,15 @@ export default function App() {
   async function addEpisodeNote() {
     if (!newEpisodeNote.trim() || !selectedEpisodeId) return;
 
+    const timestampSeconds = audioRef.current ? Math.floor(audioRef.current.currentTime) : null;
+
     const res = await fetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         episodeId: selectedEpisodeId,
         content: newEpisodeNote,
+        timestampSeconds,
       }),
     });
 
@@ -103,7 +107,16 @@ export default function App() {
     setEpisodeNotes([...episodeNotes, note]);
     setNewEpisodeNote('');
   }
-
+  // Helper to format timestamp
+  function formatTimestamp(seconds) {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, '0');
+    const s = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${m}:${s}`;
+  }
   async function saveEditedNote(noteId) {
     const res = await fetch(`/api/notes/${noteId}`, {
       method: 'PATCH',
@@ -267,6 +280,21 @@ export default function App() {
                         </>
                       ) : (
                         <>
+                          <div className="flex items-start gap-2">
+                            {note.timestampSeconds !== null && (
+                              <button
+                                onClick={() => {
+                                  if (audioRef.current) {
+                                    audioRef.current.currentTime = note.timestampSeconds;
+                                    audioRef.current.play();
+                                  }
+                                }}
+                                className="text-blue-600 text-xs font-mono"
+                              >
+                                [{formatTimestamp(note.timestampSeconds)}]
+                              </button>
+                            )}
+                          </div>
                           <div>{note.content}</div>
                           <div className="mt-1 flex gap-3 text-xs text-gray-600">
                             <button
@@ -308,7 +336,9 @@ export default function App() {
         )}
 
         {/* Audio Player */}
-        {currentAudioUrl && <audio controls autoPlay src={currentAudioUrl} className="w-full" />}
+        {currentAudioUrl && (
+          <audio ref={audioRef} controls autoPlay src={currentAudioUrl} className="w-full" />
+        )}
 
         {/* Episode List */}
         <ul className="divide-y rounded bg-white shadow">
