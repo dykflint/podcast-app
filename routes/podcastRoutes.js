@@ -4,7 +4,11 @@
  * Routes for podcast-fetching.
  */
 import express from 'express';
-import { getPodcast, getPodcasts } from '../controllers/podcastController.js';
+import {
+  getPodcast,
+  getPodcasts,
+  getRecentEpisodesHandler,
+} from '../controllers/podcastController.js';
 
 const router = express.Router();
 
@@ -39,4 +43,11 @@ router.get('/podcast', getPodcast);
  * Fetch all podcasts
  */
 router.get('/podcasts', getPodcasts);
+/**
+ * GET /api/episodes/recent
+ *
+ * Fetch the latest episodes across all subscribed podcasts.
+ * The limit can be set in the podcastService.js file.
+ */
+router.get('/episodes/recent', getRecentEpisodesHandler);
 export default router;

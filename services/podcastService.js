@@ -190,6 +190,35 @@ export async function getAllPodcasts() {
     noteCount: podcast._count.notes,
   }));
 }
+
+/**
+ * Fetch recent episodes for the "Recent" view.
+ *
+ * Limit it to the latest 30 episodes for now.
+ *
+ */
+export async function getRecentEpisodes(limit = 30) {
+  const episodes = await prisma.episode.findMany({
+    orderBy: { publishedAt: 'desc' },
+    take: limit,
+    include: {
+      podcast: true,
+    },
+  });
+
+  return episodes.map(ep => ({
+    id: ep.id,
+    title: ep.title,
+    description: ep.description,
+    publishedAt: ep.publishedAt,
+    audioUrl: ep.audioUrl,
+    podcast: {
+      id: ep.podcast.id,
+      title: ep.podcast.title,
+      imageUrl: ep.podcast.imageUrl,
+    },
+  }));
+}
 /**
  * TESTING ONLY
  */

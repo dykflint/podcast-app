@@ -1,5 +1,5 @@
 /**
- * src/views/LibraryView.jsx
+ * frontend/src/views/LibraryView.jsx
  *
  */
 export default function LibraryView({ podcasts, onSelectPodcast }) {

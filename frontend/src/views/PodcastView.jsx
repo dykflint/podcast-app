@@ -1,5 +1,5 @@
 /**
- * src/views/PodcastView.jsx
+ * frontend/src/views/PodcastView.jsx
  *
  */
 import { useRef } from 'react';

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import LibraryView from '../../src/views/LibraryView.jsx';
-import PodcastView from '../../src/views/PodcastView.jsx';
+import LibraryView from './views/LibraryView.jsx';
+import PodcastView from './views/PodcastView.jsx';
+import RecentEpisodesView from './views/RecentEpisodesView.jsx';
 
 export default function App() {
   // --- App navigation ---
@@ -12,6 +13,8 @@ export default function App() {
   const [podcast, setPodcast] = useState(null);
   const [episodes, setEpisodes] = useState([]);
 
+  // --- Recent Episodes ---
+  const [recentEpisodes, setRecentEpisodes] = useState([]);
   // --- Playback ---
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(null);
   const audioRef = useRef(null);
@@ -100,6 +103,32 @@ export default function App() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Fetch recent episodes when switching to Recent view
+  useEffect(() => {
+    if (activeView !== 'recent') return;
+
+    fetch('/api/episodes/recent')
+      .then(res => res.json())
+      .then(setRecentEpisodes)
+      .catch(console.error);
+  }, [activeView]);
+  // Navigation handler for Recent view
+  function openEpisodeFromRecent(ep) {
+    loadPodcastById(ep.podcast.id);
+
+    // delay until podcast loads
+    setTimeout(() => {
+      setSelectedEpisodeId(ep.id);
+
+      const index = episodes.findIndex(e => e.id === ep.id);
+      if (index !== -1) {
+        setCurrentEpisodeIndex(index);
+      }
+    }, 300);
+
+    setActiveView('podcast');
   }
   // Load episode notes when dropdown selection changes
   useEffect(() => {
@@ -282,7 +311,9 @@ export default function App() {
       )}
 
       {/* TODO: Recent Episodes View */}
-      {activeView === 'recent' && <div className="text-gray-600">Recent Episodes</div>}
+      {activeView === 'recent' && (
+        <RecentEpisodesView episodes={recentEpisodes} onSelectEpisode={openEpisodeFromRecent} />
+      )}
       {/* TODO: Add podcast via RSS view */}
       {activeView === 'add' && <div className="text-gray-600">Add podcast via RSS</div>}
       {/* TODO: All notes view*/}

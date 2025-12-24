@@ -2,7 +2,12 @@
  * controllers/podcastController.js
  */
 
-import { getPodcastFromRss, getAllPodcasts, getPodcastById } from '../services/podcastService.js';
+import {
+  getPodcastFromRss,
+  getAllPodcasts,
+  getPodcastById,
+  getRecentEpisodes,
+} from '../services/podcastService.js';
 
 /**
  * GET /api/podcasts
@@ -48,5 +53,18 @@ export async function getPodcast(req, res) {
     res.status(500).json({
       error: 'Failed to fetch or parse RSS feed',
     });
+  }
+}
+
+/**
+ * GET /api/episodes/recent
+ */
+export async function getRecentEpisodesHandler(req, res) {
+  try {
+    const episodes = await getRecentEpisodes();
+    res.json(episodes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to load recent episodes' });
   }
 }
