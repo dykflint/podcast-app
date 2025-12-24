@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 
 export default function App() {
+  // ---  Podcast library ---
+  const [podcasts, setPodcasts] = useState([]);
+  const [selectedPodcastId, setSelectedPodcastId] = useState(null);
   // --- Podcast and episodes ---
   const [rssUrl, setRssUrl] = useState('');
   const [podcast, setPodcast] = useState(null);
@@ -55,14 +58,46 @@ export default function App() {
       // Load podcast-wide notes
       const notesRes = await fetch(`/api/notes?podcastId=${data.id}`);
       setPodcastNotes(await notesRes.json());
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       setError('Failed to load podcast');
     } finally {
       setLoading(false);
     }
   }
 
+  // Always start with the library view
+  useEffect(() => {
+    fetch('/api/podcasts')
+      .then(res => res.json())
+      .then(setPodcasts)
+      .catch(error => console.error('Failed to load library', error));
+  }, []);
+  // Helper function to load a podcast by id
+  async function loadPodcastById(podcastId) {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/podcast?id=${podcastId}`);
+      if (!res.ok) throw new Error('Failed to load podcast');
+
+      const data = await res.json();
+
+      setPodcast(data);
+      setEpisodes(data.episodes);
+      setSelectedPodcastId(podcastId);
+
+      // Load podcast-wide notes
+      const noteRes = await fetch(`/api/notes?podcastId=${podcastId}`);
+      setPodcastNotes(await noteRes.json());
+    } catch (error) {
+      console.error(error);
+      setError('Failed to load podcast');
+    } finally {
+      setLoading(false);
+    }
+  }
   // Load episode notes when dropdown selection changes
   useEffect(() => {
     if (!selectedEpisodeId) return;
@@ -164,10 +199,46 @@ export default function App() {
    */
   const currentAudioUrl =
     currentEpisodeIndex !== null ? episodes[currentEpisodeIndex]?.audioUrl : null;
+  console.log(podcasts);
+  return selectedPodcastId === null ? (
+    <section>
+      <h2 className="mb-4 text-2xl font-bold">Your Podcasts</h2>
+      {podcasts.length === 0 && (
+        <div className="text-gray-600">No podcasts yet. Add one using an RSS feed.</div>
+      )}
 
-  return (
+      <ul className="grid gap-4">
+        {podcasts.map(podcast => (
+          <li
+            key={podcast.id}
+            onClick={() => loadPodcastById(podcast.id)}
+            className="cursor-pointer rounded bg-white p-4 shadow hover:bg-gray-50"
+          >
+            <div className="text-lg font-semibold">{podcast.title || 'Untitled Podcast'}</div>
+
+            {podcast.description && (
+              <div className="mt-1 text-sm text-gray-600">{podcast.description}</div>
+            )}
+
+            <div className="mt-2 text-xs text-gray-500">
+              {podcast.episodeCount} episodes - {podcast.noteCount} notes
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ) : (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="mx-auto max-w-3xl space-y-6">
+        <button
+          onClick={() => {
+            setSelectedPodcastId(null);
+            setPodcast(null);
+          }}
+          className="mb-4 text-sm text-blue-600 cursor-pointer"
+        >
+          Back to Libarry
+        </button>
         <h1 className="text-3xl font-bold">Podcast Player</h1>
 
         {/* RSS Input */}
@@ -194,7 +265,7 @@ export default function App() {
         {podcast && (
           <section className="rounded bg-white p-4 shadow">
             <h2 className="mb-2 text-xl font-semibold">Podcast Notes</h2>
-            <ul className="mb-3 space-y2 text-sm">
+            <ul className="mb-3 space-y-2 text-sm">
               {podcastNotes.map(note => (
                 <li key={note.id} className="rounded bg-gray-100 p-2">
                   {editingNoteId === note.id ? (
@@ -212,7 +283,7 @@ export default function App() {
                           Save
                         </button>
                         <button
-                          onClick={() => saveEditedNoteId(null)}
+                          onClick={() => setEditingNoteId(null)}
                           className="text-sm text-gray-600"
                         >
                           Cancel
@@ -300,7 +371,7 @@ export default function App() {
                               Save
                             </button>
                             <button
-                              onClick={() => saveEditedNoteId(null)}
+                              onClick={() => setEditingNoteId(null)}
                               className="text-sm text-gray-600"
                             >
                               Cancel
