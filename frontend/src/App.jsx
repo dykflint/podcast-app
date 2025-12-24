@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import LibraryView from './views/LibraryView.jsx';
 import PodcastView from './views/PodcastView.jsx';
 import RecentEpisodesView from './views/RecentEpisodesView.jsx';
+import MiniPlayer from './components/MiniPlayer.jsx';
 
 export default function App() {
   // --- App navigation ---
@@ -348,8 +349,7 @@ export default function App() {
           // Audio Playback
           playEpisode={playEpisode}
           nowPlaying={nowPlaying}
-          // isPlaying={isPlaying}
-          // audioRef={audioRef}
+          seekTo={seconds => (audioRef.current.currentTime = seconds)}
           currentAudioUrl={currentAudioUrl}
           rssUrl={rssUrl}
           setRssUrl={setRssUrl}
@@ -389,77 +389,26 @@ export default function App() {
       {activeView === 'add' && <div className="text-gray-600">Add podcast via RSS</div>}
       {/* TODO: All notes view*/}
       {activeView === 'notes' && <div className="text-gray-600">All notes</div>}
-      {nowPlaying && (
-        <audio
-          ref={audioRef}
-          src={nowPlaying.episode.audioUrl}
-          onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
-          onLoadedMetadata={() => setDuration(audioRef.current.duration)}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => setIsPlaying(false)}
-        />
-      )}
-      {nowPlaying && (
-        <div className="fixed bottom-20  left-0 right-0 z-40 mx-auto max-w-3xl px-4">
-          <div className="flex items-center gap-3 rounded-full bg-white p-3 shadow-lg">
-            {/* Play / Pause */}
-            <button
-              onClick={togglePlayPause}
-              className="cursor-pointer flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white"
-            >
-              {isPlaying ? (
-                <svg
-                  width="24px"
-                  height="24px"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  color="white"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    d="M6 18.4V5.6C6 5.26863 6.26863 5 6.6 5H9.4C9.73137 5 10 5.26863 10 5.6V18.4C10 18.7314 9.73137 19 9.4 19H6.6C6.26863 19 6 18.7314 6 18.4Z"
-                    fill="white"
-                    stroke="white"
-                    strokeWidth="1.5"
-                  ></path>
-                  <path
-                    d="M14 18.4V5.6C14 5.26863 14.2686 5 14.6 5H17.4C17.7314 5 18 5.26863 18 5.6V18.4C18 18.7314 17.7314 19 17.4 19H14.6C14.2686 19 14 18.7314 14 18.4Z"
-                    fill="white"
-                    stroke="white"
-                    strokeWidth="1.5"
-                  ></path>
-                </svg>
-              ) : (
-                <svg
-                  width="24px"
-                  height="24px"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  color="white"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    d="M6.90588 4.53682C6.50592 4.2998 6 4.58808 6 5.05299V18.947C6 19.4119 6.50592 19.7002 6.90588 19.4632L18.629 12.5162C19.0211 12.2838 19.0211 11.7162 18.629 11.4838L6.90588 4.53682Z"
-                    fill="white"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>
-                </svg>
-              )}
-            </button>
-            {/* Info */}
-            <div className="flex-1 overflow-hidden">
-              <div className="truncate text-sm font-semibold">{nowPlaying.episode.title}</div>
-              <div className="truncate text-xs text-gray-500">{nowPlaying.podcast.title}</div>
-            </div>
-          </div>
-        </div>
-      )}
+      <audio
+        ref={audioRef}
+        src={nowPlaying?.audioUrl || ''}
+        onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
+        onLoadedMetadata={() => setDuration(audioRef.current.duration)}
+        onEnded={() => setIsPlaying(false)}
+      />
+      <MiniPlayer
+        nowPlaying={nowPlaying}
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        currentTime={currentTime}
+        duration={duration}
+        playbackRate={playbackRate}
+        onSeek={t => (audioRef.current.currentTime = t)}
+        onJump={delta =>
+          (audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime + delta))
+        }
+        cyclePlaybackRate={() => setPlaybackRate(r => (r === 1 ? 1.5 : r === 1.5 ? 2 : 1))}
+      />
       <nav className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 gap-2 rounded-full bg-white px-3 py-2 shadow-lg">
         <button
           onClick={() => setActiveView('recent')}

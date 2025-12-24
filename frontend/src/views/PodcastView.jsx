@@ -11,10 +11,10 @@ export default function PodcastView({
   episodeNotes,
   selectedEpisodeId,
   setSelectedEpisodeId,
-  setCurrentEpisodeIndex,
   // Audio playback
   playEpisode,
   nowPlaying,
+  seekTo,
   rssUrl,
   setRssUrl,
   loadPodcast,
@@ -195,14 +195,13 @@ export default function PodcastView({
                             {note.timestampSeconds !== null && (
                               <button
                                 onClick={() => {
-                                  // Switch episode if needed
-                                  const episodeIndex = episodes.findIndex(
-                                    ep => ep.id === note.episodeId,
-                                  );
+                                  const episode = episodes.find(ep => ep.id === note.episodeId);
+                                  if (!episode) return;
 
-                                  if (episodeIndex !== -1) {
-                                    setCurrentEpisodeIndex(episodeIndex);
-                                  }
+                                  playEpisode(episode, podcast);
+
+                                  // seek after playback is ready
+                                  seekTo(note.timestampSeconds);
                                 }}
                                 className="text-blue-600 text-xs font-mono"
                               >
@@ -271,7 +270,9 @@ export default function PodcastView({
               <li
                 key={episode.id}
                 onClick={() => {
-                  playEpisode(episode, podcast);
+                  if (nowPlaying?.episodeId !== episode.id) {
+                    playEpisode(episode, podcast);
+                  }
                   setSelectedEpisodeId(episode.id);
                 }}
                 className={`flex items-start gap-3 cursor-pointer p-3 transition
