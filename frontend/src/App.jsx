@@ -217,16 +217,31 @@ export default function App() {
               <li
                 key={podcast.id}
                 onClick={() => loadPodcastById(podcast.id)}
-                className="cursor-pointer rounded bg-white p-4 shadow hover:bg-gray-50"
+                className="flex cursor-pointer items-start gap-4 rounded bg-white p-4 shadow hover:bg-gray-50"
               >
-                <div className="text-lg font-semibold">{podcast.title || 'Untitled Podcast'}</div>
-
-                {podcast.description && (
-                  <div className="mt-1 text-sm text-gray-600">{podcast.description}</div>
+                {/* Podcast artwork */}
+                {podcast.imageUrl ? (
+                  <img
+                    src={podcast.imageUrl}
+                    alt={podcast.title}
+                    className="h-16 w-16 shrink-0 rounded object-cover"
+                  />
+                ) : (
+                  <div className="h-16 w-16 shrink-0 rounded bg-gray-200" />
                 )}
+                {/* Podcast info */}
+                <div className="flex-1">
+                  <div className="text-lg font-semibold">{podcast.title || 'Untitled Podcast'}</div>
 
-                <div className="mt-2 text-xs text-gray-500">
-                  {podcast.episodeCount} episodes - {podcast.noteCount} notes
+                  {podcast.description && (
+                    <div className="mt-1 line-clamp-2 text-sm text-gray-600">
+                      {podcast.description}
+                    </div>
+                  )}
+
+                  <div className="mt-2 text-xs text-gray-500">
+                    {podcast.episodeCount} episodes - {podcast.noteCount} notes
+                  </div>
                 </div>
               </li>
             ))}
@@ -497,19 +512,35 @@ export default function App() {
                       // Sync episode notes
                       setSelectedEpisodeId(episode.id);
                     }}
-                    className={`cursor-pointer p-3 transition
+                    className={`flex items-start gap-3 cursor-pointer p-3 transition
                   ${isPlaying ? 'bg-blue-50 pointer-events-none' : 'hover:bg-gray-50'}
                 `}
                   >
-                    <div className={`font-semibold ${isPlaying ? 'text-blue-700' : ''}`}>
-                      {episode.title}
-                    </div>
-
-                    <div className="text-sm text-gray-600">{episode.description}</div>
-
-                    {isPlaying && (
-                      <div className="mt-2 text-xs font-semibold text-blue-600">Now Playing</div>
+                    {/* Episode artwork (podcast-level) */}
+                    {podcast?.imageUrl ? (
+                      <img
+                        src={podcast.imageUrl}
+                        alt={podcast.title}
+                        className="h-12 w-12 shrink-0 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 shrink-0 rounded bg-gray-200" />
                     )}
+
+                    {/* Episode info */}
+                    <div className="flex-1">
+                      <div className={`font-semibold ${isPlaying ? 'text-blue-700' : ''}`}>
+                        {episode.title}
+                      </div>
+
+                      <div className="text-sm text-gray-600 line-clamp-2">
+                        {episode.description}
+                      </div>
+
+                      {isPlaying && (
+                        <div className="mt-1 text-xs font-semibold text-blue-600">Now Playing</div>
+                      )}
+                    </div>
                   </li>
                 );
               })}

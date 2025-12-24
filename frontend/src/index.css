@@ -1,1 +1,6 @@
 @import 'tailwindcss';
+
+/* Avoid pixelated downscaling when possible */
+img {
+  image-rendering: auto;
+}
