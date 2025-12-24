@@ -61,12 +61,13 @@ export async function createNoteHandler(req, res) {
  */
 export async function updateNoteHandler(req, res) {
   const noteId = Number(req.params.id);
-  const { content } = req.body;
+  const { content, timestampSeconds } = req.body;
 
   try {
     const updated = await updateNote({
       noteId,
       content,
+      timestampSeconds,
     });
 
     res.json(updated);

@@ -56,7 +56,7 @@ export async function createNote({ podcastId, episodeId, content, timestampSecon
 /**
  * Update a note's content.
  */
-export async function updateNote({ noteId, content }) {
+export async function updateNote({ noteId, content, timestampSeconds }) {
   if (!noteId) {
     throw new Error('noteId is required');
   }
@@ -67,7 +67,10 @@ export async function updateNote({ noteId, content }) {
 
   return prisma.note.update({
     where: { id: noteId },
-    data: { content },
+    data: {
+      ...(content !== undefined && { content }),
+      ...(timestampSeconds !== undefined && { timestampSeconds }),
+    },
   });
 }
 
