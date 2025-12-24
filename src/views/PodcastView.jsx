@@ -27,12 +27,14 @@ export default function PodcastView({
   onSaveEditedNote,
   onDeleteNote,
   formatTimestamp,
+  secondsToMMSS,
+  mmssToSeconds,
   editingNoteId,
   setEditingNoteId,
   editingContent,
   setEditingContent,
-  // editingTimestamp,
-  // setEditingTimestamp,
+  editingTimestampText,
+  setEditingTimestampText,
   newPodcastNote,
   setNewPodcastNote,
   newEpisodeNote,
@@ -68,7 +70,7 @@ export default function PodcastView({
 
         {error && <div className="text-red-600">{error}</div>}
 
-        {/* Podcast notes */}
+        {/* PODCAST NOTES */}
         {podcast && (
           <section className="rounded bg-white p-4 shadow">
             <h2 className="mb-2 text-xl font-semibold">Podcast Notes</h2>
@@ -105,6 +107,7 @@ export default function PodcastView({
                           onClick={() => {
                             setEditingNoteId(note.id);
                             setEditingContent(note.content);
+                            setEditingTimestampText('');
                           }}
                         >
                           Edit
@@ -130,7 +133,7 @@ export default function PodcastView({
           </section>
         )}
 
-        {/* Episode notes */}
+        {/* EPISODE NOTES */}
         {podcast && (
           <section className="rounded bg-white p-4 shadow">
             <h2 className="mb-2 text-xl font-semibold">Episode Notes</h2>
@@ -156,14 +159,16 @@ export default function PodcastView({
                       {editingNoteId === note.id ? (
                         <>
                           <input
-                            ref={timestampInputRef}
                             type="text"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            defaultValue={
-                              note.timestampSeconds !== null ? String(note.timestampSeconds) : ''
-                            }
-                            className="mb-1 w-24 rounded border p-1 text-xs"
+                            value={editingTimestampText}
+                            onChange={e => {
+                              const value = e.target.value;
+                              // allow only digits + colon
+                              if (/^[0-9:]*$/.test(value)) {
+                                setEditingTimestampText(value);
+                              }
+                            }}
+                            className="mb-1 w-24 rounded border p-1 text-xs font-mono"
                             placeholder="Seconds"
                           />
                           <textarea
@@ -177,7 +182,7 @@ export default function PodcastView({
                                 const raw = timestampInputRef.current?.value ?? '';
                                 const timestampSeconds = raw === '' ? null : Number(raw);
 
-                                onSaveEditedNote(note.id, timestampSeconds);
+                                onSaveEditedNote(note.id);
                               }}
                               className="text-sm text-blue-600"
                             >
@@ -226,6 +231,11 @@ export default function PodcastView({
                               onClick={() => {
                                 setEditingNoteId(note.id);
                                 setEditingContent(note.content);
+                                setEditingTimestampText(
+                                  note.timestampSeconds !== null
+                                    ? secondsToMMSS(note.timestampSeconds)
+                                    : '',
+                                );
                               }}
                             >
                               Edit

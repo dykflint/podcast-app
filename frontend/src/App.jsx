@@ -28,7 +28,7 @@ export default function App() {
   // --- Editing notes ---
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
-  const [editingTimestamp, setEditingTimestamp] = useState('');
+  const [editingTimestampText, setEditingTimestampText] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -165,6 +165,24 @@ export default function App() {
     setNewEpisodeNote('');
   }
   // Helper to format timestamp
+  function secondsToMMSS(seconds) {
+    if (seconds === null || seconds === undefined) return '';
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  function mmssToSeconds(text) {
+    if (!text) return null;
+
+    const match = text.match(/^(\d+):([0-5]\d)$/);
+    if (!match) return null;
+
+    const minutes = Number(match[1]);
+    const seconds = Number(match[2]);
+
+    return minutes * 60 + seconds;
+  }
   function formatTimestamp(seconds) {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -174,13 +192,20 @@ export default function App() {
       .padStart(2, '0');
     return `${m}:${s}`;
   }
-  async function saveEditedNote(noteId, timestampSeconds) {
+  async function saveEditedNote(noteId) {
+    const seconds = mmssToSeconds(editingTimestampText);
+
+    if (editingTimestampText && seconds === null) {
+      alert('Timestamp must be in mm:ss format');
+      return;
+    }
+
     const res = await fetch(`/api/notes/${noteId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         content: editingContent,
-        timestampSeconds,
+        timestampSeconds: seconds,
       }),
     });
 
@@ -192,6 +217,7 @@ export default function App() {
 
     setEditingNoteId(null);
     setEditingContent('');
+    setEditingTimestampText('');
   }
 
   async function deleteNoteById(noteId) {
@@ -239,13 +265,15 @@ export default function App() {
           onAddEpisodeNoteAtCurrentTime={addEpisodeNoteAtCurrentTime}
           onSaveEditedNote={saveEditedNote}
           onDeleteNote={deleteNoteById}
+          secondsToMMSS={secondsToMMSS}
+          mmssToSeconds={mmssToSeconds}
           formatTimestamp={formatTimestamp}
           editingNoteId={editingNoteId}
           setEditingNoteId={setEditingNoteId}
           editingContent={editingContent}
           setEditingContent={setEditingContent}
-          // editingTimestamp={editingTimestamp}
-          // setEditingTimestamp={setEditingTimestamp}
+          editingTimestampText={editingTimestampText}
+          setEditingTimestampText={setEditingTimestampText}
           newPodcastNote={newPodcastNote}
           setNewPodcastNote={setNewPodcastNote}
           newEpisodeNote={newEpisodeNote}
