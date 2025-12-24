@@ -15,9 +15,21 @@ export default function App() {
 
   // --- Recent Episodes ---
   const [recentEpisodes, setRecentEpisodes] = useState([]);
-  // --- Playback ---
-  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(null);
+  // --- Global audio playback ---
   const audioRef = useRef(null);
+
+  const [nowPlaying, setNowPlaying] = useState(null);
+  // {
+  //  episodeId,
+  //  title,
+  //  audioUrl,
+  //  podcastTitle,
+  //  podcastImageUrl,
+  // }
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(null);
 
   // --- Podcast notes ---
   const [podcastNotes, setPodcastNotes] = useState([]);
@@ -36,6 +48,9 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  /**
+   * ======== LOAD PODCAST ============
+   */
   async function loadPodcast() {
     if (!rssUrl.trim()) {
       alert('Please enter an RSS feed URL');
@@ -72,6 +87,9 @@ export default function App() {
     }
   }
 
+  /**
+   * =========== LIBRARY VIEW ============
+   */
   // Always start with the library view
   useEffect(() => {
     fetch('/api/podcasts')
@@ -105,6 +123,9 @@ export default function App() {
     }
   }
 
+  /**
+   * =============== RECENT VIEW ==============
+   */
   // Fetch recent episodes when switching to Recent view
   useEffect(() => {
     if (activeView !== 'recent') return;
@@ -130,6 +151,10 @@ export default function App() {
 
     setActiveView('podcast');
   }
+
+  /**
+   * ========== EPISODE AND PODCAST NOTES ==============
+   */
   // Load episode notes when dropdown selection changes
   useEffect(() => {
     if (!selectedEpisodeId) return;
@@ -256,8 +281,47 @@ export default function App() {
     setEpisodeNotes(notes => notes.filter(n => n.id !== noteId));
   }
   /**
-   * Derive the currently plaiyng audio URL
+   * =========== AUDIO PLAYBACK ====================
    */
+  function playEpisode(episode, podcast) {
+    if (!episode?.audioUrl) {
+      alert('No audio available for this episode');
+      return;
+    }
+
+    setNowPlaying({
+      episodeId: episode.id,
+      episode,
+      podcast,
+    });
+
+    // Defer play until src is updated
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
+    }, 0);
+    setIsPlaying(true);
+  }
+
+  function togglePlayPause() {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+  }
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.play().catch(() => {});
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying, nowPlaying?.audioUrl]);
   const currentAudioUrl =
     currentEpisodeIndex !== null ? episodes[currentEpisodeIndex]?.audioUrl : null;
   return (
@@ -278,7 +342,11 @@ export default function App() {
           setSelectedEpisodeId={setSelectedEpisodeId}
           currentEpisodeIndex={currentEpisodeIndex}
           setCurrentEpisodeIndex={setCurrentEpisodeIndex}
-          audioRef={audioRef}
+          // Audio Playback
+          playEpisode={playEpisode}
+          nowPlaying={nowPlaying}
+          // isPlaying={isPlaying}
+          // audioRef={audioRef}
           currentAudioUrl={currentAudioUrl}
           rssUrl={rssUrl}
           setRssUrl={setRssUrl}
@@ -310,7 +378,7 @@ export default function App() {
         />
       )}
 
-      {/* TODO: Recent Episodes View */}
+      {/* Recent Episodes View */}
       {activeView === 'recent' && (
         <RecentEpisodesView episodes={recentEpisodes} onSelectEpisode={openEpisodeFromRecent} />
       )}
@@ -318,6 +386,33 @@ export default function App() {
       {activeView === 'add' && <div className="text-gray-600">Add podcast via RSS</div>}
       {/* TODO: All notes view*/}
       {activeView === 'notes' && <div className="text-gray-600">All notes</div>}
+      {nowPlaying && (
+        <audio
+          ref={audioRef}
+          src={nowPlaying.episode.audioUrl}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => setIsPlaying(false)}
+        />
+      )}
+      {nowPlaying && (
+        <div className="fixed bottom-16 left-0 right-0 z-40 mx-auto max-w-3xl px-4">
+          <div className="flex items-center gap-3 rounded-lg bg-white p-3 shadow-lg">
+            {/* Play / Pause */}
+            <button
+              onClick={togglePlayPause}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white"
+            >
+              {isPlaying ? 'Pause' : 'Play'}
+            </button>
+            {/* Info */}
+            <div className="flex-1 overflow-hidden">
+              <div className="truncate text-sm font-semibold">{nowPlaying.episode.title}</div>
+              <div className="truncate text-xs text-gray-500">{nowPlaying.podcast.title}</div>
+            </div>
+          </div>
+        </div>
+      )}
       <nav className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 gap-2 rounded-full bg-white px-3 py-2 shadow-lg">
         <button
           onClick={() => setActiveView('recent')}

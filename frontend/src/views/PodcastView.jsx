@@ -11,10 +11,10 @@ export default function PodcastView({
   episodeNotes,
   selectedEpisodeId,
   setSelectedEpisodeId,
-  currentEpisodeIndex,
   setCurrentEpisodeIndex,
-  audioRef,
-  currentAudioUrl,
+  // Audio playback
+  playEpisode,
+  nowPlaying,
   rssUrl,
   setRssUrl,
   loadPodcast,
@@ -28,7 +28,6 @@ export default function PodcastView({
   onDeleteNote,
   formatTimestamp,
   secondsToMMSS,
-  mmssToSeconds,
   editingNoteId,
   setEditingNoteId,
   editingContent,
@@ -107,12 +106,11 @@ export default function PodcastView({
                           onClick={() => {
                             setEditingNoteId(note.id);
                             setEditingContent(note.content);
-                            setEditingTimestampText('');
                           }}
                         >
                           Edit
                         </button>
-                        <button onClick={() => deleteNoteById(note.id)} className="text-red-600">
+                        <button onClick={() => onDeleteNote(note.id)} className="text-red-600">
                           Delete
                         </button>
                       </div>
@@ -178,12 +176,7 @@ export default function PodcastView({
                           />
                           <div className="flex gap-2 text-sm">
                             <button
-                              onClick={() => {
-                                const raw = timestampInputRef.current?.value ?? '';
-                                const timestampSeconds = raw === '' ? null : Number(raw);
-
-                                onSaveEditedNote(note.id);
-                              }}
+                              onClick={() => onSaveEditedNote(note.id)}
                               className="text-sm text-blue-600"
                             >
                               Save
@@ -209,14 +202,6 @@ export default function PodcastView({
 
                                   if (episodeIndex !== -1) {
                                     setCurrentEpisodeIndex(episodeIndex);
-
-                                    // Wait for audio source to update
-                                    setTimeout(() => {
-                                      if (audioRef.current) {
-                                        audioRef.current.currentTime = note.timestampSeconds;
-                                        audioRef.current.play();
-                                      }
-                                    }, 200);
                                   }
                                 }}
                                 className="text-blue-600 text-xs font-mono"
@@ -268,7 +253,6 @@ export default function PodcastView({
                     onClick={onAddEpisodeNoteAtCurrentTime}
                     className="rounded bg-green-600 px-3 py-2 text-white"
                     title="Add note at current playback time"
-                    disabled={!audioRef.current}
                   >
                     Add Timed Note
                   </button>
@@ -278,31 +262,20 @@ export default function PodcastView({
           </section>
         )}
 
-        {/* Audio Player */}
-        {currentAudioUrl && (
-          <audio ref={audioRef} controls autoPlay src={currentAudioUrl} className="w-full" />
-        )}
-
         {/* Episode List */}
         <ul className="divide-y rounded bg-white shadow">
           {episodes.map((episode, index) => {
-            const isPlaying = index === currentEpisodeIndex;
+            const isActive = nowPlaying?.episodeId === episode.id;
 
             return (
               <li
                 key={episode.id}
                 onClick={() => {
-                  if (!episode.audioUrl) {
-                    alert('No audio available for this episode');
-                    return;
-                  }
-                  // Start playback
-                  setCurrentEpisodeIndex(index);
-                  // Sync episode notes
+                  playEpisode(episode, podcast);
                   setSelectedEpisodeId(episode.id);
                 }}
                 className={`flex items-start gap-3 cursor-pointer p-3 transition
-              ${isPlaying ? 'bg-blue-50 pointer-events-none' : 'hover:bg-gray-50'}
+              ${isActive ? 'bg-blue-50 pointer-events-none' : 'hover:bg-gray-50'}
             `}
               >
                 {/* Episode artwork (podcast-level) */}
@@ -318,13 +291,13 @@ export default function PodcastView({
 
                 {/* Episode info */}
                 <div className="flex-1">
-                  <div className={`font-semibold ${isPlaying ? 'text-blue-700' : ''}`}>
+                  <div className={`font-semibold ${isActive ? 'text-blue-700' : ''}`}>
                     {episode.title}
                   </div>
 
                   <div className="text-sm text-gray-600 line-clamp-2">{episode.description}</div>
 
-                  {isPlaying && (
+                  {isActive && (
                     <div className="mt-1 text-xs font-semibold text-blue-600">Now Playing</div>
                   )}
                 </div>
