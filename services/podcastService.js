@@ -36,17 +36,21 @@ export async function getPodcastFromRss(rssUrl) {
   // --- Fetch RSS ---
   const feed = await parser.parseURL(rssUrl);
 
+  // --- Extract podcast artwork from RSS ---
+  const imageUrl = feed.image?.url || feed.itunes?.image || feed.itunes?.image?.href || null;
   // --- Upsert podcast ---
   const podcast = await prisma.podcast.upsert({
     where: { rssUrl },
     update: {
       title: feed.title,
       description: feed.description,
+      imageUrl,
     },
     create: {
       rssUrl,
       title: feed.title,
       description: feed.description,
+      imageUrl,
     },
   });
 
@@ -99,6 +103,7 @@ export async function getPodcastFromRss(rssUrl) {
     id: podcast.id, // Important for podcast-wide notes
     title: podcast.title,
     description: podcast.description,
+    imageUrl: podcast.imageUrl,
     episodes,
   };
 
@@ -111,6 +116,46 @@ export async function getPodcastFromRss(rssUrl) {
   return result;
 }
 
+/**
+ * Fetch a podcast and its episodes by podcast id.
+ *
+ * Used for the libarry -> detail view.
+ * Returns the same shape as getPodcastFromRss().
+ */
+export async function getPodcastById(podcastId) {
+  if (!podcastId) {
+    throw new Error('podcastId is required');
+  }
+
+  const podcast = await prisma.podcast.findUnique({
+    where: { id: podcastId },
+    include: {
+      episodes: {
+        orderBy: {
+          publishedAt: 'desc',
+        },
+      },
+    },
+  });
+
+  if (!podcast) {
+    throw new Error('Podcast not found');
+  }
+
+  return {
+    id: podcast.id,
+    title: podcast.title,
+    description: podcast.description,
+    imageUrl: podcast.imageUrl,
+    episodes: podcast.episodes.map(ep => ({
+      id: ep.id,
+      title: ep.title || 'Untitled episode',
+      description: ep.description || '',
+      audioUrl: ep.audioUrl,
+      publishedAt: ep.publishedAt,
+    })),
+  };
+}
 /**
  * Fetch all podcasts for the library view.
  *
@@ -139,6 +184,7 @@ export async function getAllPodcasts() {
     id: podcast.id,
     title: podcast.title,
     description: podcast.description,
+    imageUrl: podcast.imageUrl,
     rssUrl: podcast.rssUrl,
     episodeCount: podcast._count.episodes,
     noteCount: podcast._count.notes,

@@ -17,6 +17,7 @@ model Podcast {
   rssUrl      String   @unique
   title       String?
   description String?
+  imageUrl    String?
   createdAt   DateTime @default(now())
 
   episodes Episode[]

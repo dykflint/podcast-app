@@ -2,7 +2,7 @@
  * controllers/podcastController.js
  */
 
-import { getPodcastFromRss, getAllPodcasts } from '../services/podcastService.js';
+import { getPodcastFromRss, getAllPodcasts, getPodcastById } from '../services/podcastService.js';
 
 /**
  * GET /api/podcasts
@@ -22,22 +22,26 @@ export async function getPodcasts(req, res) {
 /**
  * GET /api/podcast
  *
- * Query parameters:
- * - rssUrl: string (required)
+ * Supports:
+ * - ?rssUrl=: string (required)
+ * - ?id=123
  */
 export async function getPodcast(req, res) {
-  const { rssUrl } = req.query;
-
-  // Basic validation
-  if (!rssUrl) {
-    return res.status(400).json({
-      error: 'rssUrl query parameter is required',
-    });
-  }
+  const { rssUrl, id } = req.query;
 
   try {
-    const podcast = await getPodcastFromRss(rssUrl);
-    res.json(podcast);
+    if (id) {
+      const podcast = await getPodcastById(Number(id));
+      return res.json(podcast);
+    }
+    if (rssUrl) {
+      const podcast = await getPodcastFromRss(rssUrl);
+      return res.json(podcast);
+    }
+
+    return res.status(400).json({
+      error: 'Either rssUrl or id query parameter is requirede',
+    });
   } catch (error) {
     console.error('Failed to fetch podcast:', error);
 
