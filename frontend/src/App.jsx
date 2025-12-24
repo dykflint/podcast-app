@@ -29,6 +29,7 @@ export default function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(null);
 
   // --- Podcast notes ---
@@ -291,8 +292,10 @@ export default function App() {
 
     setNowPlaying({
       episodeId: episode.id,
-      episode,
-      podcast,
+      episodeTitle: episode.title,
+      podcastTitle: podcast.title,
+      audioUrl: episode.audioUrl,
+      artworkUrl: podcast.imageUrl,
     });
 
     // Defer play until src is updated
@@ -321,7 +324,7 @@ export default function App() {
     } else {
       audioRef.current.pause();
     }
-  }, [isPlaying, nowPlaying?.audioUrl]);
+  }, [isPlaying, playbackRate, nowPlaying?.audioUrl]);
   const currentAudioUrl =
     currentEpisodeIndex !== null ? episodes[currentEpisodeIndex]?.audioUrl : null;
   return (
@@ -390,20 +393,64 @@ export default function App() {
         <audio
           ref={audioRef}
           src={nowPlaying.episode.audioUrl}
+          onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
+          onLoadedMetadata={() => setDuration(audioRef.current.duration)}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
         />
       )}
       {nowPlaying && (
-        <div className="fixed bottom-16 left-0 right-0 z-40 mx-auto max-w-3xl px-4">
-          <div className="flex items-center gap-3 rounded-lg bg-white p-3 shadow-lg">
+        <div className="fixed bottom-20  left-0 right-0 z-40 mx-auto max-w-3xl px-4">
+          <div className="flex items-center gap-3 rounded-full bg-white p-3 shadow-lg">
             {/* Play / Pause */}
             <button
               onClick={togglePlayPause}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white"
+              className="cursor-pointer flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white"
             >
-              {isPlaying ? 'Pause' : 'Play'}
+              {isPlaying ? (
+                <svg
+                  width="24px"
+                  height="24px"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  color="white"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    d="M6 18.4V5.6C6 5.26863 6.26863 5 6.6 5H9.4C9.73137 5 10 5.26863 10 5.6V18.4C10 18.7314 9.73137 19 9.4 19H6.6C6.26863 19 6 18.7314 6 18.4Z"
+                    fill="white"
+                    stroke="white"
+                    strokeWidth="1.5"
+                  ></path>
+                  <path
+                    d="M14 18.4V5.6C14 5.26863 14.2686 5 14.6 5H17.4C17.7314 5 18 5.26863 18 5.6V18.4C18 18.7314 17.7314 19 17.4 19H14.6C14.2686 19 14 18.7314 14 18.4Z"
+                    fill="white"
+                    stroke="white"
+                    strokeWidth="1.5"
+                  ></path>
+                </svg>
+              ) : (
+                <svg
+                  width="24px"
+                  height="24px"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  color="white"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    d="M6.90588 4.53682C6.50592 4.2998 6 4.58808 6 5.05299V18.947C6 19.4119 6.50592 19.7002 6.90588 19.4632L18.629 12.5162C19.0211 12.2838 19.0211 11.7162 18.629 11.4838L6.90588 4.53682Z"
+                    fill="white"
+                    stroke="white"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  ></path>
+                </svg>
+              )}
             </button>
             {/* Info */}
             <div className="flex-1 overflow-hidden">
