@@ -7,6 +7,33 @@
  * - Enforce ownership rules
  */
 import { prisma } from '../db/prisma.js';
+
+/**
+ * Fetch all notes
+ */
+export async function getAllNotes({ query } = {}) {
+  return prisma.note.findMany({
+    where: query
+      ? {
+          content: {
+            contains: query,
+            mode: 'insensitive',
+          },
+        }
+      : undefined,
+    orderBy: {
+      createdAt: 'desc',
+    },
+    include: {
+      podcast: true,
+      episode: {
+        include: {
+          podcast: true,
+        },
+      },
+    },
+  });
+}
 /**
  * Fetch notes for a podcast or episode.
  *

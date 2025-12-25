@@ -4,6 +4,7 @@ import PodcastView from './views/PodcastView.jsx';
 import RecentEpisodesView from './views/RecentEpisodesView.jsx';
 import MiniPlayer from './components/MiniPlayer.jsx';
 import AddPodcastView from './views/AddPodcastView.jsx';
+import NotesView from './views/NotesView.jsx';
 
 export default function App() {
   // --- App navigation ---
@@ -83,7 +84,7 @@ export default function App() {
       setEpisodes(data.episodes);
 
       // Load podcast-wide notes
-      const notesRes = await fetch(`/api/notes?podcastId=${data.id}`);
+      const notesRes = await fetch(`/api/notes/by-podcast?podcastId=${data.id}`);
       setPodcastNotes(await notesRes.json());
     } catch (error) {
       console.error(error);
@@ -137,7 +138,7 @@ export default function App() {
         setSuccessMessage(null);
       }, 800);
 
-      const notesRes = await fetch(`/api/notes?podcastId=${data.id}`);
+      const notesRes = await fetch(`/api/notes/by-podcast?podcastId=${data.id}`);
       setPodcastNotes(await notesRes.json());
     } catch (error) {
       console.error(error);
@@ -172,7 +173,7 @@ export default function App() {
       setActiveView('podcast');
 
       // Load podcast-wide notes
-      const noteRes = await fetch(`/api/notes?podcastId=${podcastId}`);
+      const noteRes = await fetch(`/api/notes/by-podcast?podcastId=${podcastId}`);
       setPodcastNotes(await noteRes.json());
     } catch (error) {
       console.error(error);
@@ -218,7 +219,7 @@ export default function App() {
   useEffect(() => {
     if (!selectedEpisodeId) return;
 
-    fetch(`/api/notes?episodeId=${selectedEpisodeId}`)
+    fetch(`/api/notes/by-episode?episodeId=${selectedEpisodeId}`)
       .then(res => res.json())
       .then(setEpisodeNotes);
   }, [selectedEpisodeId]);
@@ -462,8 +463,16 @@ export default function App() {
           successMessage={successMessage}
         />
       )}
-      {/* TODO: All notes view*/}
-      {activeView === 'notes' && <div className="text-gray-600">All notes</div>}
+      {/* All notes view*/}
+      {activeView === 'notes' && (
+        <NotesView
+          onOpenPodcast={podcastId => loadPodcastById(podcastId)}
+          onPlayEpisodeAt={(episodeId, seconds) => {
+            // TODO: navigate
+            // TODO: integrate with MiniPlayer
+          }}
+        />
+      )}
       <audio
         ref={audioRef}
         src={nowPlaying?.audioUrl || ''}
