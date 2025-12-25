@@ -3,7 +3,7 @@
  */
 import { useEffect, useState } from 'react';
 
-export default function NotesView({ onOpenPodcast, onPlayEpisodeAt }) {
+export default function NotesView({ onOpenNote }) {
   const [notes, setNotes] = useState([]);
   const [query, setQuery] = useState('');
 
@@ -26,13 +26,31 @@ export default function NotesView({ onOpenPodcast, onPlayEpisodeAt }) {
       />
       <ul className="space-y-3">
         {notes.map(note => (
-          <li key={note.id} className="rounded bg-white p-3 shadow">
+          <li
+            key={note.id}
+            className="rounded bg-white p-3 shadow cursor-pointer hover:bg-gray-50"
+            onClick={() => {
+              if (!note.podcast || !note.episode) return;
+
+              onOpenNote({
+                podcastId: note.podcast.id,
+                episodeId: note.episode.id,
+              });
+            }}
+          >
             <div className="text-sm">{note.content}</div>
 
             <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-600">
               {note.timestampSeconds !== null && (
                 <button
-                  onClick={() => onPlayEpisodeAt(note.episode.id, note.timestampSeconds)}
+                  onClick={e => {
+                    e.stopPropagation();
+                    onOpenNote({
+                      podcastId: note.podcast.id,
+                      episodeId: note.episode.id,
+                      timestampSeconds: note.timestampSeconds,
+                    });
+                  }}
                   className="font-mono text-blue-600"
                 >
                   [{Math.floor(note.timestampSeconds / 60)}:

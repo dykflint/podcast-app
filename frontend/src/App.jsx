@@ -215,6 +215,31 @@ export default function App() {
   /**
    * ========== EPISODE AND PODCAST NOTES ==============
    */
+
+  /**
+   * Opoen podcast + play episode (optionally at timestamp)
+   */
+  async function openNoteTarget({ podcastId, episodeId, timestampSeconds = null }) {
+    // Load podcast if not already open
+    if (!podcast || podcast.id !== podcastId) {
+      await loadPodcastById(podcastId);
+    }
+
+    // Wait for episodes to be available
+    setTimeout(() => {
+      const episode = episodes.find(e => e.id === episodeId);
+      if (!episode) return;
+
+      playEpisode(episode, { title: podcast.title, imageUrl: podcast.imageUrl });
+
+      if (timestampSeconds !== null && audioRef.current) {
+        audioRef.current.currentTime = timestampSeconds;
+      }
+
+      setSelectedEpisodeId(episodeId);
+      setActiveView('podcast');
+    }, 300);
+  }
   // Load episode notes when dropdown selection changes
   useEffect(() => {
     if (!selectedEpisodeId) return;
@@ -454,7 +479,7 @@ export default function App() {
       {activeView === 'recent' && (
         <RecentEpisodesView episodes={recentEpisodes} onSelectEpisode={openEpisodeFromRecent} />
       )}
-      {/* TODO: Add podcast via RSS view */}
+      {/* Add podcast via RSS view */}
       {activeView === 'add' && (
         <AddPodcastView
           onSubscribeByRss={subscribeByRss}
@@ -466,10 +491,8 @@ export default function App() {
       {/* All notes view*/}
       {activeView === 'notes' && (
         <NotesView
-          onOpenPodcast={podcastId => loadPodcastById(podcastId)}
-          onPlayEpisodeAt={(episodeId, seconds) => {
-            // TODO: navigate
-            // TODO: integrate with MiniPlayer
+          onOpenNote={({ podcastId, episodeId, timestampSeconds }) => {
+            openNoteTarget({ podcastId, episodeId, timestampSeconds });
           }}
         />
       )}
