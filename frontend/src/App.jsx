@@ -3,6 +3,7 @@ import LibraryView from './views/LibraryView.jsx';
 import PodcastView from './views/PodcastView.jsx';
 import RecentEpisodesView from './views/RecentEpisodesView.jsx';
 import MiniPlayer from './components/MiniPlayer.jsx';
+import AddPodcastView from './views/AddPodcastView.jsx';
 
 export default function App() {
   // --- App navigation ---
@@ -89,6 +90,35 @@ export default function App() {
     }
   }
 
+  /**
+   * ========== SUBSCIRBE PODCAST HANDLER (loadPodcast reused) ============
+   */
+  async function subscribeByRss(rssUrl) {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
+
+      if (!res.ok) {
+        throw new Error('Failed to subscribe to podcast');
+      }
+
+      const data = await res.json();
+
+      setPodcast(data);
+      setEpisodes(data.episodes);
+      setActiveView('podcast');
+
+      const notesRes = await fetch(`/api/notes?podcastId=${data.id}`);
+      setPodcastNotes(await notesRes.json());
+    } catch (error) {
+      console.error(error);
+      setError('Could not subscribe to podcast');
+    } finally {
+      setLoading(false);
+    }
+  }
   /**
    * =========== LIBRARY VIEW ============
    */
@@ -397,7 +427,9 @@ export default function App() {
         <RecentEpisodesView episodes={recentEpisodes} onSelectEpisode={openEpisodeFromRecent} />
       )}
       {/* TODO: Add podcast via RSS view */}
-      {activeView === 'add' && <div className="text-gray-600">Add podcast via RSS</div>}
+      {activeView === 'add' && (
+        <AddPodcastView onSubscribeByRss={subscribeByRss} loading={loading} error={error} />
+      )}
       {/* TODO: All notes view*/}
       {activeView === 'notes' && <div className="text-gray-600">All notes</div>}
       <audio
