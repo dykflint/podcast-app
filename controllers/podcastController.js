@@ -50,6 +50,13 @@ export async function getPodcast(req, res) {
   } catch (error) {
     console.error('Failed to fetch podcast:', error);
 
+    if (error.code === 'ALREADY_SUBSCRIBED') {
+      return res.status(409).json({
+        error: 'ALREADY_SUBSCRIBED',
+        podcastId: error.podcastId,
+        title: error.title,
+      });
+    }
     res.status(500).json({
       error: 'Failed to fetch or parse RSS feed',
     });

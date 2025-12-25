@@ -26,6 +26,19 @@ export async function getPodcastFromRss(rssUrl) {
     throw new Error('rssUrl is required');
   }
 
+  // Check if already subscribed
+  const existing = await prisma.podcast.findUnique({
+    where: { rssUrl },
+  });
+
+  if (existing) {
+    const error = new Error('ALREADY_SUBSCRIBED');
+    error.code = 'ALREADY_SUBSCRIBED';
+    error.podcastId = existing.id;
+    error.title = existing.title;
+    throw error;
+  }
+
   const now = Date.now();
   const cachedEntry = cache.get(rssUrl);
 

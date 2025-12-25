@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 
-export default function AddPodcastView({ onSubscribeByRss, loading, error }) {
+export default function AddPodcastView({ onSubscribeByRss, loading, error, successMessage }) {
   const [rssUrl, setRssUrl] = useState('');
 
   function handleSubmit(e) {
@@ -47,6 +47,11 @@ export default function AddPodcastView({ onSubscribeByRss, loading, error }) {
 
           {error && <div className="text-sm text-red-600">{error}</div>}
 
+          {successMessage && (
+            <div className="rounded bg-green-100 border border-green-300 px-3 py-2 text-sm text-green-800">
+              {successMessage}
+            </div>
+          )}
           <button
             type="submit"
             disabled={loading}

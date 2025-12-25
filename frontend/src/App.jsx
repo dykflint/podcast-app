@@ -15,6 +15,9 @@ export default function App() {
   const [podcast, setPodcast] = useState(null);
   const [episodes, setEpisodes] = useState([]);
 
+  // Success state for subscribing to podcasts
+  const [successMessage, setSuccessMessage] = useState(null);
+
   // --- Recent Episodes ---
   const [recentEpisodes, setRecentEpisodes] = useState([]);
   // --- Global audio playback ---
@@ -96,9 +99,27 @@ export default function App() {
   async function subscribeByRss(rssUrl) {
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const res = await fetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
+
+      // Check if already subscribed
+      if (res.status === 409) {
+        const data = await res.json();
+
+        // Already subscribed feedback
+        setError(`You're already subscribed to "${data.title}"`);
+
+        // Optional: auto-navigate after short delay
+        setTimeout(() => {
+          loadPodcastById(data.podcastId);
+          setActiveView('podcast');
+          setError(null);
+        }, 1000);
+
+        return;
+      }
 
       if (!res.ok) {
         throw new Error('Failed to subscribe to podcast');
@@ -106,9 +127,15 @@ export default function App() {
 
       const data = await res.json();
 
-      setPodcast(data);
-      setEpisodes(data.episodes);
-      setActiveView('podcast');
+      // Success feedback
+      setSuccessMessage(`Subscribed to "${data.title}"`);
+      // Short delay so user sees success
+      setTimeout(() => {
+        setPodcast(data);
+        setEpisodes(data.episodes);
+        setActiveView('podcast');
+        setSuccessMessage(null);
+      }, 800);
 
       const notesRes = await fetch(`/api/notes?podcastId=${data.id}`);
       setPodcastNotes(await notesRes.json());
@@ -428,7 +455,12 @@ export default function App() {
       )}
       {/* TODO: Add podcast via RSS view */}
       {activeView === 'add' && (
-        <AddPodcastView onSubscribeByRss={subscribeByRss} loading={loading} error={error} />
+        <AddPodcastView
+          onSubscribeByRss={subscribeByRss}
+          loading={loading}
+          error={error}
+          successMessage={successMessage}
+        />
       )}
       {/* TODO: All notes view*/}
       {activeView === 'notes' && <div className="text-gray-600">All notes</div>}
@@ -461,7 +493,11 @@ export default function App() {
           Recent
         </button>
         <button
-          onClick={() => setActiveView('add')}
+          onClick={() => {
+            setActiveView('add');
+            setError(null);
+            setSuccessMessage(null);
+          }}
           className={`rounded-full px-4 py-2 text-sm ${activeView === 'add' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}
         >
           Add
