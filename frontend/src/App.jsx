@@ -183,6 +183,26 @@ export default function App() {
     setNewPodcastNote('');
   }
 
+  async function addEpisodeNoteFromMiniPlayer({ episodeId, content, timestampSeconds }) {
+    if (!content.trim()) return;
+
+    const res = await fetch('/api/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        episodeId,
+        content,
+        timestampSeconds,
+      }),
+    });
+
+    const note = await res.json();
+
+    // Optional: if user is currently viewing that episode, update notes live
+    if (episodeId === selectedEpisodeId) {
+      setEpisodeNotes(notes => [...notes, note]);
+    }
+  }
   async function addEpisodeNote() {
     if (!newEpisodeNote.trim() || !selectedEpisodeId) return;
 
@@ -308,15 +328,6 @@ export default function App() {
     setIsPlaying(true);
   }
 
-  function togglePlayPause() {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-  }
   useEffect(() => {
     if (!audioRef.current) return;
 
@@ -408,6 +419,7 @@ export default function App() {
           (audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime + delta))
         }
         cyclePlaybackRate={() => setPlaybackRate(r => (r === 1 ? 1.5 : r === 1.5 ? 2 : 1))}
+        onAddEpisodeNote={addEpisodeNoteFromMiniPlayer}
       />
       <nav className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 gap-2 rounded-full bg-white px-3 py-2 shadow-lg">
         <button

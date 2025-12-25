@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react';
 /**
  * MiniPlayer component
  *
@@ -16,11 +17,67 @@ export default function MiniPlayer({
   onJump,
   playbackRate,
   cyclePlaybackRate,
+  onAddEpisodeNote,
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [attachTimestamp, setAttachTimestamp] = useState(true);
+  const [snapshotTime, setSnapshotTime] = useState(null);
+
   if (!nowPlaying) return null;
 
+  function openNoteEditor() {
+    setSnapshotTime(Math.floor(currentTime));
+    setAttachTimestamp(true);
+    setIsExpanded(true);
+  }
+
+  function handleSaveNote() {
+    if (!noteText.trim()) return;
+
+    onAddEpisodeNote({
+      episodeId: nowPlaying.episodeId,
+      content: noteText,
+      timestampSeconds: attachTimestamp ? snapshotTime : null,
+    });
+
+    setNoteText('');
+    setIsExpanded(false);
+  }
   return (
-    <div className="fixed bottom-20 left-0 rounded-full right-0 z-40 bg-white border-t shadow-md px-8 py-4">
+    <div className="fixed bottom-20 left-0 rounded-lg right-0 z-40 bg-white border-t shadow-md px-8 py-4">
+      {/* Expandable note editor UI */}
+      {isExpanded && (
+        <div className="mt-3 border-t pt-3 space-y-2">
+          <textarea
+            value={noteText}
+            onChange={e => setNoteText(e.target.value)}
+            placeholder="Write a note..."
+            className="w-full rounded border p-2 text-sm"
+          />
+
+          <label className="flex items-center gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={attachTimestamp}
+              onChange={e => setAttachTimestamp(e.target.checked)}
+            />
+            Attach timestamp ({formatTime(snapshotTime)})
+          </label>
+
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setIsExpanded(false)} className="text-xs text-gray-600">
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveNote}
+              className="rounded bg-blue-600 px-3 py-1 text-xs text-white"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      )}
       <div className="flex items-center gap-3">
         {/* Artwork */}
         {nowPlaying.artworkUrl && (
@@ -34,6 +91,46 @@ export default function MiniPlayer({
         </div>
 
         {/* Controls */}
+        <button onClick={openNoteEditor} title="Add note">
+          <svg
+            width="24px"
+            height="24px"
+            strokeWidth="1.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            color="#000000"
+          >
+            <path
+              d="M8 14L16 14"
+              stroke="#000000"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            ></path>
+            <path
+              d="M8 10L10 10"
+              stroke="#000000"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            ></path>
+            <path
+              d="M8 18L12 18"
+              stroke="#000000"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            ></path>
+            <path
+              d="M10 3H6C4.89543 3 4 3.89543 4 5V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V5C20 3.89543 19.1046 3 18 3H14.5M10 3V1M10 3V5"
+              stroke="#000000"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokelinejoin="round"
+            ></path>
+          </svg>
+        </button>
         <button onClick={() => onJump(-15)}>
           <svg
             width="24px"
