@@ -10,7 +10,7 @@ export default function NotesView({ onOpenNote }) {
   useEffect(() => {
     const url = query ? `/api/notes?q=${encodeURIComponent(query)}` : '/api/notes';
     apiFetch(url)
-      .then(res => res.json())
+      // .then(res => res.json())
       .then(setNotes);
   }, [query]);
 
