@@ -153,7 +153,7 @@ export default function App() {
   // Always start with the library view
   useEffect(() => {
     apiFetch('/api/podcasts')
-      // .then(res => res.json())
+      .then(res => res.json())
       .then(setPodcasts)
       .catch(error => console.error('Failed to load library', error));
   }, []);
@@ -191,7 +191,7 @@ export default function App() {
     if (activeView !== 'recent') return;
 
     apiFetch('/api/episodes/recent')
-      // .then(res => res.json())
+      .then(res => res.json())
       .then(setRecentEpisodes)
       .catch(console.error);
   }, [activeView]);
@@ -245,7 +245,7 @@ export default function App() {
     if (!selectedEpisodeId) return;
 
     apiFetch(`/api/notes/by-episode?episodeId=${selectedEpisodeId}`)
-      // .then(res => res.json())
+      .then(res => res.json())
       .then(setEpisodeNotes);
   }, [selectedEpisodeId]);
 
