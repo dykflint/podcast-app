@@ -20,13 +20,32 @@ import podcastRoutes from './routes/podcastRoutes.js';
 const app = express();
 const parser = new Parser();
 
+/**
+ * CORS CONFIGURATION
+ * Don't allow credentials.
+ */
+const allowedOrigins = [
+  'https://localhost:5173',
+  'https://podcast-app-git-main-dykflints-projects.vercel.app',
+];
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://podcast-app-git-main-dykflints-projects.vercel.app'],
+    origin(origin, callback) {
+      // allow non-browser requests (curl, server-to-server)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
+    credentials: false,
   }),
 );
+// explicitly handle preflight
 app.options('*', cors());
 // app.use(express.static('.'));
 app.use(express.json());
