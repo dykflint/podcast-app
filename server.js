@@ -20,8 +20,6 @@ import podcastRoutes from './routes/podcastRoutes.js';
 const app = express();
 const parser = new Parser();
 
-app.use(express.static('.'));
-app.use(express.json());
 app.use(
   cors({
     origin: [
@@ -31,6 +29,8 @@ app.use(
     credentials: true,
   }),
 );
+app.use(express.static('.'));
+app.use(express.json());
 /**
  * Routes
  */
