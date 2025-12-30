@@ -22,14 +22,13 @@ const parser = new Parser();
 
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'https://podcast-app-git-main-dykflints-projects.vercel.app/',
-    ],
-    credentials: true,
+    origin: ['http://localhost:5173', 'https://podcast-app-git-main-dykflints-projects.vercel.app'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
   }),
 );
-app.use(express.static('.'));
+app.options('*', cors());
+// app.use(express.static('.'));
 app.use(express.json());
 /**
  * Routes
