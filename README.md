@@ -40,18 +40,18 @@ The goal is to make podcast listening more active and reflective, not passive.
 
 ### On Desktop
 
-![Subscribed Podcasts](screenshots/podcast1_desktop)
-![Recent Episodes](screenshots/podcast2_desktop)
-![Add Podcasts](screenshots/podcast3_desktop)
-![Notes](screenshots/podcast4_desktop)
+![Subscribed Podcasts](screenshots/podcast1_desktop.png)
+![Recent Episodes](screenshots/podcast2_desktop.png)
+![Add Podcasts](screenshots/podcast3_desktop.png)
+![Notes](screenshots/podcast4_desktop.png)
 
 ### On iOS
 
-![Subscribed Podcasts](screenshots/podcast1_mobile)
-![Recent Episodes](screenshots/podcast2_mobile)
-![Add Podcasts](screenshots/podcast3_mobile)
-![Notes](screenshots/podcast4_mobile)
-![Media Player with Notes Functionality](screenshots/podcast5_mobile)
+![Subscribed Podcasts](screenshots/podcast1_mobile.PNG)
+![Recent Episodes](screenshots/podcast2_mobile.PNG)
+![Add Podcasts](screenshots/podcast3_mobile.PNG)
+![Notes](screenshots/podcast4_mobile.PNG)
+![Media Player with Notes Functionality](screenshots/podcast5_mobile.PNG)
 
 ---
 
