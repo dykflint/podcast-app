@@ -1,44 +1,82 @@
 # Podcast Notes App
 
-A full-stack podcast player that lets you subscribe to podcasts via RSS, listen across episodes, and take timestamped notes — all in one place.
-Built as a mobile-friendly Progressive Web App with a global mini-player and persistent playback.
+A full-stack podcast player focused on fast, frictionless note-taking while listening.  
+The app lets you subscribe to podcasts via RSS, play episodes with a global mini-player, and attach timestamped notes that are easy to revisit later.
 
 ---
 
-## Features
+## Why This Project Exists
 
-- Subscribe to podcasts via RSS feed
-- Global mini-player (plays across views)
+I often listen to podcasts where interesting ideas, references, or insights come up unexpectedly.  
+Most podcast apps make note-taking slow, awkward, or disconnected from playback.
+
+This project exists to solve that problem:
+
+- Take notes **while listening**, without breaking focus
+- Attach notes to **exact timestamps**
+- Quickly jump back to the moment a note refers to
+- Keep notes organized across podcasts and episodes
+
+The goal is to make podcast listening more active and reflective, not passive.
+
+---
+
+## Core Features
+
+- Subscribe to podcasts via RSS
+- Podcast library view
+- Recent episodes view
+- Global mini-player that persists across views
+- Play / pause, seek, skip, and playback speed control
 - Timestamped episode notes
 - Podcast-wide notes
-- Search across all notes
-- Recent episodes view
-- Progressive Web App (installable on mobile)
-- Deployed frontend and backend
+- Edit and delete notes
+- Notes search across all podcasts and episodes
+- Progressive Web App (PWA) support
 
 ---
 
-## Architecture
+## Screenshots
+
+### On Desktop
+
+![Subscribed Podcasts](screenshots/podcast1_desktop)
+![Recent Episodes](screenshots/podcast2_desktop)
+![Add Podcasts](screenshots/podcast3_desktop)
+![Notes](screenshots/podcast4_desktop)
+
+### On iOS
+
+![Subscribed Podcasts](screenshots/podcast1_mobile)
+![Recent Episodes](screenshots/podcast2_mobile)
+![Add Podcasts](screenshots/podcast3_mobile)
+![Notes](screenshots/podcast4_mobile)
+![Media Player with Notes Functionality](screenshots/podcast5_mobile)
+
+---
+
+## Tech Stack
 
 ### Frontend
 
-- React + Vite
+- React (Vite)
 - Tailwind CSS
-- PWA support (service worker + manifest)
-- Deployed on Vercel
+- Fetch API
+- Service Worker (PWA support)
 
 ### Backend
 
-- Node.js + Express
-- RSS parsing via rss-parser
-- Prisma ORM
-- PostgreSQL database
-- Deployed on Render
-
-### Database
-
+- Node.js
+- Express
+- Prisma
 - PostgreSQL
-- Managed via Prisma migrations
+- RSS Parser
+
+### Hosting
+
+- Frontend: Vercel
+- Backend API: Render
+- Database: PostgreSQL (hosted)
 
 ---
 
@@ -46,145 +84,89 @@ Built as a mobile-friendly Progressive Web App with a global mini-player and per
 
 ```
 /
-├── frontend/          # React + Vite app
+├── server.js
+├── routes/
+├── controllers/
+├── services/
+├── prisma/
+│   └── schema.prisma
+├── frontend/
 │   ├── src/
-│   │   ├── views/     # App views (Library, Podcast, Notes, etc.)
-│   │   ├── components/# Reusable components (MiniPlayer, etc.)
-│   │   ├── api.js     # API fetch helper
-│   │   └── main.jsx
+│   │   ├── views/
+│   │   ├── components/
+│   │   ├── api.js
+│   │   └── App.jsx
 │   └── public/
-│       ├── manifest.json
-│       └── sw.js
-│
-├── routes/            # Express routes
-├── controllers/       # HTTP controllers
-├── services/          # Business logic
-├── prisma/            # Prisma schema & migrations
-├── server.js          # Backend entrypoint
 └── README.md
 ```
 
 ---
 
-## Running Locally
+## Local Development
 
-### 1. Clone the repository
+### Prerequisites
 
-```bash
-git clone https://github.com/dykflint/podcast-notes-app.git
-cd podcast-notes-app
+- Node.js 18+
+- PostgreSQL
+- npm or pnpm
+
+### Backend Setup
+
 ```
-
----
-
-### 2. Backend setup
-
-Install dependencies:
-
-```bash
 npm install
-```
-
-Create a `.env` file:
-
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/podcast_notes
-```
-
-Run Prisma migrations:
-
-```bash
 npx prisma migrate dev
-```
-
-Start the backend:
-
-```bash
-node server.js
-```
-
-Backend runs at:
-
-```
-http://localhost:3000
-```
-
----
-
-### 3. Frontend setup
-
-```bash
-cd frontend
-npm install
-```
-
-Create a `.env` file:
-
-```env
-VITE_API_BASE_URL=http://localhost:3000
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
 
-Frontend runs at:
+The backend will run on `http://localhost:3000`.
+
+### Frontend Setup
 
 ```
-http://localhost:5173
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend will run on `http://localhost:5173`.
+
+---
+
+## Environment Variables
+
+### Backend
+
+```
+DATABASE_URL=postgresql://...
+PORT=3000
+```
+
+### Frontend
+
+```
+VITE_API_BASE_URL=http://localhost:3000
 ```
 
 ---
 
-## Deployment
+## Design Decisions
 
-### Frontend (Vercel)
-
-- Build command: `npm run build`
-- Output directory: `frontend/dist`
-- Environment variable:
-  ```env
-  VITE_API_BASE_URL=https://your-render-backend.onrender.com
-  ```
-
-### Backend (Render)
-
-- Node service
-- Start command:
-  ```bash
-  node server.js
-  ```
-- Environment variables:
-  ```env
-  DATABASE_URL=...
-  ```
+- **RSS-first**: No platform lock-in, works with any podcast feed
+- **Global mini-player**: Playback should never stop when navigating
+- **Notes are first-class**: Notes are searchable and navigable, not an afterthought
+- **Timestamp-based notes**: Notes are tied to moments, not just episodes
+- **Separation of concerns**: Clear split between controllers, services, and views
 
 ---
 
-## Progressive Web App
+## Future Ideas
 
-- Installable on mobile via browser
-- Offline-ready application shell
-- Persistent mini-player across views
-
----
-
-## Roadmap
-
-- Episode bookmarks
-- Tags for notes
-- Podcast discovery and search
-- User accounts and sync
-- Advanced playback controls
-- AI-assisted note summaries
-
----
-
-## Author
-
-Built by DykFlint.
+- Podcast search (beyond RSS)
+- Offline playback and notes sync
+- Note export (Markdown / PDF)
+- Tagging notes
+- Full-text search indexing
+- Cross-device sync improvements
 
 ---
 
