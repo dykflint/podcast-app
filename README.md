@@ -40,6 +40,7 @@ The goal is to make podcast listening more active and reflective, not passive.
 
 ### On Desktop
 
+<img src="screenshots/podcast1_desktop.png" width="300" alt="Subscribed Podcasts">
 ![Subscribed Podcasts](screenshots/podcast1_desktop.png)
 ![Recent Episodes](screenshots/podcast2_desktop.png)
 ![Add Podcasts](screenshots/podcast3_desktop.png)
