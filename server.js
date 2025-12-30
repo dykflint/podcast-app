@@ -45,8 +45,6 @@ app.use(
     credentials: false,
   }),
 );
-// explicitly handle preflight
-app.options('*', cors());
 // app.use(express.static('.'));
 app.use(express.json());
 /**
