@@ -2,14 +2,14 @@
  * frontend/src/views/NotesView.jsx
  */
 import { useEffect, useState } from 'react';
-
+import { apiFetch } from '../api.js';
 export default function NotesView({ onOpenNote }) {
   const [notes, setNotes] = useState([]);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
     const url = query ? `/api/notes?q=${encodeURIComponent(query)}` : '/api/notes';
-    fetch(url)
+    apiFetch(url)
       .then(res => res.json())
       .then(setNotes);
   }, [query]);

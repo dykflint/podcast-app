@@ -5,7 +5,7 @@ import RecentEpisodesView from './views/RecentEpisodesView.jsx';
 import MiniPlayer from './components/MiniPlayer.jsx';
 import AddPodcastView from './views/AddPodcastView.jsx';
 import NotesView from './views/NotesView.jsx';
-
+import { apiFetch } from './api.js';
 export default function App() {
   // --- App navigation ---
   const [activeView, setActiveView] = useState('library');
@@ -73,7 +73,7 @@ export default function App() {
     setSelectedEpisodeId(null);
 
     try {
-      const res = await fetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
+      const res = await apiFetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
 
       if (!res.ok) {
         throw new Error('Failed to load podcast');
@@ -84,7 +84,7 @@ export default function App() {
       setEpisodes(data.episodes);
 
       // Load podcast-wide notes
-      const notesRes = await fetch(`/api/notes/by-podcast?podcastId=${data.id}`);
+      const notesRes = await apiFetch(`/api/notes/by-podcast?podcastId=${data.id}`);
       setPodcastNotes(await notesRes.json());
     } catch (error) {
       console.error(error);
@@ -103,7 +103,7 @@ export default function App() {
     setSuccessMessage(null);
 
     try {
-      const res = await fetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
+      const res = await apiFetch(`/api/podcast?rssUrl=${encodeURIComponent(rssUrl)}`);
 
       // Check if already subscribed
       if (res.status === 409) {
@@ -138,7 +138,7 @@ export default function App() {
         setSuccessMessage(null);
       }, 800);
 
-      const notesRes = await fetch(`/api/notes/by-podcast?podcastId=${data.id}`);
+      const notesRes = await apiFetch(`/api/notes/by-podcast?podcastId=${data.id}`);
       setPodcastNotes(await notesRes.json());
     } catch (error) {
       console.error(error);
@@ -152,7 +152,7 @@ export default function App() {
    */
   // Always start with the library view
   useEffect(() => {
-    fetch('/api/podcasts')
+    apiFetch('/api/podcasts')
       .then(res => res.json())
       .then(setPodcasts)
       .catch(error => console.error('Failed to load library', error));
@@ -163,7 +163,7 @@ export default function App() {
     setError(null);
 
     try {
-      const res = await fetch(`/api/podcast?id=${podcastId}`);
+      const res = await apiFetch(`/api/podcast?id=${podcastId}`);
       if (!res.ok) throw new Error('Failed to load podcast');
 
       const data = await res.json();
@@ -173,7 +173,7 @@ export default function App() {
       setActiveView('podcast');
 
       // Load podcast-wide notes
-      const noteRes = await fetch(`/api/notes/by-podcast?podcastId=${podcastId}`);
+      const noteRes = await apiFetch(`/api/notes/by-podcast?podcastId=${podcastId}`);
       setPodcastNotes(await noteRes.json());
     } catch (error) {
       console.error(error);
@@ -190,7 +190,7 @@ export default function App() {
   useEffect(() => {
     if (activeView !== 'recent') return;
 
-    fetch('/api/episodes/recent')
+    apiFetch('/api/episodes/recent')
       .then(res => res.json())
       .then(setRecentEpisodes)
       .catch(console.error);
@@ -244,7 +244,7 @@ export default function App() {
   useEffect(() => {
     if (!selectedEpisodeId) return;
 
-    fetch(`/api/notes/by-episode?episodeId=${selectedEpisodeId}`)
+    apiFetch(`/api/notes/by-episode?episodeId=${selectedEpisodeId}`)
       .then(res => res.json())
       .then(setEpisodeNotes);
   }, [selectedEpisodeId]);
@@ -252,7 +252,7 @@ export default function App() {
   async function addPodcastNote() {
     if (!newPodcastNote.trim()) return;
 
-    const res = await fetch('/api/notes', {
+    const res = await apiFetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -269,7 +269,7 @@ export default function App() {
   async function addEpisodeNoteFromMiniPlayer({ episodeId, content, timestampSeconds }) {
     if (!content.trim()) return;
 
-    const res = await fetch('/api/notes', {
+    const res = await apiFetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -289,7 +289,7 @@ export default function App() {
   async function addEpisodeNote() {
     if (!newEpisodeNote.trim() || !selectedEpisodeId) return;
 
-    const res = await fetch('/api/notes', {
+    const res = await apiFetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -309,7 +309,7 @@ export default function App() {
 
     const timestampSeconds = Math.floor(audioRef.current.currentTime);
 
-    const res = await fetch('/api/notes', {
+    const res = await apiFetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -359,7 +359,7 @@ export default function App() {
       return;
     }
 
-    const res = await fetch(`/api/notes/${noteId}`, {
+    const res = await apiFetch(`/api/notes/${noteId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -380,7 +380,7 @@ export default function App() {
   }
 
   async function deleteNoteById(noteId) {
-    await fetch(`/api/notes/${noteId}`, { method: 'DELETE' });
+    await apiFetch(`/api/notes/${noteId}`, { method: 'DELETE' });
 
     setPodcastNotes(notes => notes.filter(n => n.id !== noteId));
     setEpisodeNotes(notes => notes.filter(n => n.id !== noteId));
