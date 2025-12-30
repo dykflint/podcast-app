@@ -47,11 +47,11 @@ The goal is to make podcast listening more active and reflective, not passive.
 
 ### On iOS
 
-<img src="screenshots/podcast1_mobile.png" width="600" alt="Subscribed Podcasts">
-<img src="screenshots/podcast2_mobile.png" width="600" alt="Recent Episodes">
-<img src="screenshots/podcast3_mobile.png" width="600" alt="Add Podcasts">
-<img src="screenshots/podcast4_mobile.png" width="600" alt="Notes">
-<img src="screenshots/podcast5_mobile.png" width="600" alt="Media Player with Notes Functionality">
+<img src="screenshots/podcast1_mobile.PNG" width="600" alt="Subscribed Podcasts">
+<img src="screenshots/podcast2_mobile.PNG" width="600" alt="Recent Episodes">
+<img src="screenshots/podcast3_mobile.PNG" width="600" alt="Add Podcasts">
+<img src="screenshots/podcast4_mobile.PNG" width="600" alt="Notes">
+<img src="screenshots/podcast5_mobile.PNG" width="600" alt="Media Player with Notes Functionality">
 
 ---
 
