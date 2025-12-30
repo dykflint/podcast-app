@@ -519,6 +519,18 @@ export default function App() {
       />
       <nav className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 gap-2 rounded-full bg-white px-3 py-2 shadow-lg">
         <button
+          onClick={() => {
+            setActiveView('library');
+            setPodcast(null);
+            setSelectedEpisodeId(null);
+          }}
+          className={`rounded-full px-4 py-2 text-sm ${
+            activeView === 'library' ? 'bg-blue-600 text-white' : 'text-gray-600'
+          }`}
+        >
+          My Podcasts
+        </button>
+        <button
           onClick={() => setActiveView('recent')}
           className={`rounded-full px-4 py-2 text-sm ${activeView === 'recent' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}
         >
