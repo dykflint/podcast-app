@@ -12,7 +12,11 @@
 import Parser from 'rss-parser';
 import { prisma } from '../db/prisma.js';
 
-const parser = new Parser();
+const parser = new Parser({
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (PodcastNotesBot)',
+  },
+});
 
 /**
  * In-memory cache.
@@ -71,12 +75,16 @@ export async function getPodcastFromRss(rssUrl) {
   const episodes = [];
 
   for (const item of feed.items) {
-    const audioUrl = item.enclosure?.url || item.enclosures?.[0]?.url || null;
+    const audioUrl = item.enclosure?.url || item.enclosures?.[0]?.url || item.link || null;
 
     const guid = item.guid || null;
 
     // Skip episodes we can't uniquely identify
     if (!guid && !audioUrl) {
+      console.warn('Skipping episode - missing guid and audioUrl', {
+        title: item.title,
+        enclosure: item.enclosure,
+      });
       continue;
     }
 

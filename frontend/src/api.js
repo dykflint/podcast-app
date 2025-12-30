@@ -3,7 +3,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
 
 if (!API_BASE) {
-  console.error('❌ VITE_API_BASE_URL is not defined');
+  console.error('VITE_API_BASE_URL is not defined');
 }
 
 export async function apiFetch(path, options = {}) {
@@ -23,11 +23,8 @@ export async function apiFetch(path, options = {}) {
     throw new Error(text || `HTTP ${res.status}`);
   }
 
-  // Some endpoints might return empty bodies
-  if (!text) return null;
-
   try {
-    return JSON.parse(text);
+    return res.json();
   } catch {
     console.error('Non-JSON response:', text);
     throw new Error('Invalid JSON response from API');
