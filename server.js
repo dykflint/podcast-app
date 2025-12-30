@@ -26,7 +26,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',
-      'https://podcast-app-vercel-git-main-dykflints-projects.vercel.app/',
+      'https://podcast-app-git-main-dykflints-projects.vercel.app/',
     ],
     credentials: true,
   }),
