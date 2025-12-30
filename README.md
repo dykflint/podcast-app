@@ -40,19 +40,18 @@ The goal is to make podcast listening more active and reflective, not passive.
 
 ### On Desktop
 
-<img src="screenshots/podcast1_desktop.png" width="300" alt="Subscribed Podcasts">
-![Subscribed Podcasts](screenshots/podcast1_desktop.png)
-![Recent Episodes](screenshots/podcast2_desktop.png)
-![Add Podcasts](screenshots/podcast3_desktop.png)
-![Notes](screenshots/podcast4_desktop.png)
+<img src="screenshots/podcast1_desktop.png" width="600" alt="Subscribed Podcasts">
+<img src="screenshots/podcast2_desktop.png" width="600" alt="Recent Episodes">
+<img src="screenshots/podcast3_desktop.png" width="600" alt="Add Podcasts">
+<img src="screenshots/podcast4_desktop.png" width="600" alt="Notes">
 
 ### On iOS
 
-![Subscribed Podcasts](screenshots/podcast1_mobile.PNG)
-![Recent Episodes](screenshots/podcast2_mobile.PNG)
-![Add Podcasts](screenshots/podcast3_mobile.PNG)
-![Notes](screenshots/podcast4_mobile.PNG)
-![Media Player with Notes Functionality](screenshots/podcast5_mobile.PNG)
+<img src="screenshots/podcast1_mobile.png" width="600" alt="Subscribed Podcasts">
+<img src="screenshots/podcast2_mobile.png" width="600" alt="Recent Episodes">
+<img src="screenshots/podcast3_mobile.png" width="600" alt="Add Podcasts">
+<img src="screenshots/podcast4_mobile.png" width="600" alt="Notes">
+<img src="screenshots/podcast5_mobile.png" width="600" alt="Media Player with Notes Functionality">
 
 ---
 
